@@ -1,0 +1,36 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "05fe526f-9c90-43fc-889c-c60dcf16da6c": {
+      "ProjectGuid": "05fe526f-9c90-43fc-889c-c60dcf16da6c",
+      "DisplayName": "Sonlen.AdminWeb",
+      "ColorIndex": 0
+    },
+    "692971f9-62a0-4726-ac03-171c63956c3f": {
+      "ProjectGuid": "692971f9-62a0-4726-ac03-171c63956c3f",
+      "DisplayName": "Sonlen.AdminWebAPI",
+      "ColorIndex": 1
+    },
+    "83d14588-7360-4c58-b949-daecb01ad0cc": {
+      "ProjectGuid": "83d14588-7360-4c58-b949-daecb01ad0cc",
+      "DisplayName": "Solution Items",
+      "ColorIndex": 2
+    },
+    "ccf76772-7fbb-4fd7-b297-13f58ae208aa": {
+      "ProjectGuid": "ccf76772-7fbb-4fd7-b297-13f58ae208aa",
+      "DisplayName": "Sonlen.WebAdmin.Model",
+      "ColorIndex": 3
+    },
+    "94d0806c-0382-4dd8-bb86-4692e32ae457": {
+      "ProjectGuid": "94d0806c-0382-4dd8-bb86-4692e32ae457",
+      "DisplayName": "Sonlen.AdminWebAPI",
+      "ColorIndex": 4
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "其他檔案",
+      "ColorIndex": -1
+    }
+  },
+  "NextColorIndex": 5
+}

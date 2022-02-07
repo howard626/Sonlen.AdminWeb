@@ -1,0 +1,86 @@
+﻿@page "/login"
+
+@layout LoginLayout
+@inject IJSRuntime JS
+@inject NavigationManager navigation
+@inject ILoginService loginService
+
+<body class="login-page" style="min-height: 496.781px;">
+    <div class="login-box">
+        <div class="login-logo">
+            <a href="../../index2.html"><b>Sonlen</b></a>
+        </div>
+        <!-- /.login-logo -->
+        <div class="card">
+            <div class="card-body login-card-body">
+                <p class="login-box-msg">Sign in to start your session</p>
+
+                <EditForm Model="loginModel" OnValidSubmit="SubmitHandlerAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary></ValidationSummary>
+                    <div class="input-group mb-3">
+                        <InputText @bind-Value="loginModel.Account" class="form-control" placeholder="Email" />
+
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-envelope"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <InputText @bind-Value="loginModel.Password" class="form-control" type="password" placeholder="Password" />
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-lock"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="icheck-primary">
+                                <InputCheckbox @bind-Value="loginModel.RememberMe" />
+                                <label for="remember">
+                                    Remember Me
+                                </label>
+                            </div>
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                </EditForm>
+                <!-- /.social-auth-links -->
+
+                <p class="mb-1">
+                    <a href="forgot-password.html">I forgot my password</a>
+                </p>
+                <p class="mb-0">
+                    <a href="register.html" class="text-center">Register a new membership</a>
+                </p>
+            </div>
+            <!-- /.login-card-body -->
+        </div>
+    </div>
+    <!-- /.login-box -->
+
+</body>
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+
+    private async Task SubmitHandlerAsync()
+    {
+        Console.WriteLine($"{loginModel.Account} / {loginModel.Password} / {loginModel.RememberMe}");
+        bool result = await loginService.LoginAsync(loginModel);
+        if (result)
+        {
+            navigation.NavigateTo("/");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "帳號或密碼錯誤");
+        }
+    }
+}

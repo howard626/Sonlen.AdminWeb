@@ -1,0 +1,9 @@
+﻿<AuthorizeView>
+    <Authorized>
+        Welcome, @context?.User?.Claims?.FirstOrDefault(c => c.Type == "Name")?.Value  <a href="/Logout">Logout</a>
+    </Authorized>
+    <NotAuthorized>
+        <a href="/Register">Register</a>
+        <a href="/Login">Login</a>
+    </NotAuthorized>
+</AuthorizeView>

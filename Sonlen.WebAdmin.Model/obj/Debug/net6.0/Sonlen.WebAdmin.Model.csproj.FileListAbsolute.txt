@@ -1,0 +1,11 @@
+C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.WebAdmin.Model\bin\Debug\net6.0\Sonlen.WebAdmin.Model.deps.json
+C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.WebAdmin.Model\bin\Debug\net6.0\Sonlen.WebAdmin.Model.dll
+C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.WebAdmin.Model\bin\Debug\net6.0\ref\Sonlen.WebAdmin.Model.dll
+C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.WebAdmin.Model\bin\Debug\net6.0\Sonlen.WebAdmin.Model.pdb
+C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.WebAdmin.Model\obj\Debug\net6.0\Sonlen.WebAdmin.Model.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.WebAdmin.Model\obj\Debug\net6.0\Sonlen.WebAdmin.Model.AssemblyInfoInputs.cache
+C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.WebAdmin.Model\obj\Debug\net6.0\Sonlen.WebAdmin.Model.AssemblyInfo.cs
+C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.WebAdmin.Model\obj\Debug\net6.0\Sonlen.WebAdmin.Model.csproj.CoreCompileInputs.cache
+C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.WebAdmin.Model\obj\Debug\net6.0\Sonlen.WebAdmin.Model.dll
+C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.WebAdmin.Model\obj\Debug\net6.0\ref\Sonlen.WebAdmin.Model.dll
+C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.WebAdmin.Model\obj\Debug\net6.0\Sonlen.WebAdmin.Model.pdb
