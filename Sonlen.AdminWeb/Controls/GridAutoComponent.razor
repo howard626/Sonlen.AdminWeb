@@ -1,0 +1,61 @@
+﻿@typeparam TItem
+@using System.Reflection
+
+@if (propertyInfo != null && propertyInfo.Length > 0)
+{
+    <table class="@($"table {CssClass}")">
+        <thead>
+            <tr>
+                @foreach (var property in propertyInfo)
+                {
+                    @if(!ColumnsToExcludeCSV.Contains(property.Name))
+                    { 
+                        <th>
+                            @property.Name
+                        </th>   
+                    }
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Items)
+            {
+            <tr>
+                @foreach (var property in propertyInfo)
+                {
+                    @if (!ColumnsToExcludeCSV.Contains(property.Name))
+                    {
+                        <td>
+                            @property.GetValue(item)
+                        </td>
+                    }
+                }
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    PropertyInfo[]? propertyInfo;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (Items != null && Items.Count > 0)
+        {
+            Type typeofItem = Items[0].GetType();
+            propertyInfo = typeofItem.GetProperties();
+        }
+    }
+
+    [Parameter]
+    public List<TItem> Items { get; set; } = new List<TItem>();
+
+    [Parameter]
+    public string ColumnsToExcludeCSV { get; set; } = string.Empty;
+
+    [Parameter]
+    public string CssClass { get; set; } = string.Empty;
+}

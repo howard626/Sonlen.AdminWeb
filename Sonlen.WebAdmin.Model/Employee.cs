@@ -8,11 +8,11 @@ namespace Sonlen.WebAdmin.Model
 {
     public class Employee
     {
-        public string? EmployeeID { get; set; }
+        public string EmployeeID { get; set; } = String.Empty;
 
-        public string? Email { get; set; }
+        public string Email { get; set; } = String.Empty;
 
-        public string? EmployeeName { get; set; }
+        public string EmployeeName { get; set; } = String.Empty;
 
         public DateTime? ArrivalDate { get; set; }
 

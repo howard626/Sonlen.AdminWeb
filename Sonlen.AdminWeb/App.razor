@@ -3,7 +3,14 @@
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
-                    <RedirectToLogin />
+                    @if (!context.User.Identity.IsAuthenticated)
+                    {
+                        <RedirectToLogin />
+                    }
+                    else 
+                    {
+                        <p> 你沒有訪問這個頁面的權限，請洽管理員 0800062000 </p>
+                    }
                 </NotAuthorized>
             </AuthorizeRouteView>
         </Found>

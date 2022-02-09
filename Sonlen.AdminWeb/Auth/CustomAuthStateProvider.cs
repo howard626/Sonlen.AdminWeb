@@ -10,19 +10,6 @@ namespace Sonlen.AdminWeb.Auth
 {
     public class CustomAuthStateProvider : AuthenticationStateProvider
     {
-        //public override Task<AuthenticationState> GetAuthenticationStateAsync()
-        //{
-        //    //var claims = new List<Claim>()
-        //    //{
-        //    //    new Claim(ClaimTypes.Name,"Nick Fury"),
-        //    //    new Claim(ClaimTypes.Role, "normal")
-        //    //};
-
-        //    //var anonymous = new ClaimsIdentity(claims, "testAuthType");
-        //    var anonymous = new ClaimsIdentity();
-        //    return Task.FromResult(new AuthenticationState(new ClaimsPrincipal(anonymous)));
-        //}
-
         private readonly ILocalStorageService localStorageService;
         private readonly HttpClient httpClient;
 
@@ -37,52 +24,52 @@ namespace Sonlen.AdminWeb.Auth
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            ////確認localstorage裡面是否有token
-            //var tokenInLocalStorage = await localStorageService.GetItemAsStringAsync("authToken");
-            //if (string.IsNullOrEmpty(tokenInLocalStorage))
-            //{
-            //    //沒有的話，回傳匿名使用者
-            //    return anonymous;
-            //}
-            ////將token取出轉為claim
-            //var claims = JwtParser.ParseClaimsFromJwt(tokenInLocalStorage);
+            //確認localstorage裡面是否有token
+            var tokenInLocalStorage = await localStorageService.GetItemAsStringAsync("authToken");
+            if (string.IsNullOrEmpty(tokenInLocalStorage))
+            {
+                //沒有的話，回傳匿名使用者
+                return anonymous;
+            }
+            //將token取出轉為claim
+            var claims = JwtParser.ParseClaimsFromJwt(tokenInLocalStorage);
 
-            ////在每次request的header中帶入bearer token
-            //httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", tokenInLocalStorage);
+            //在每次request的header中帶入bearer token
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", tokenInLocalStorage);
 
-            ////回傳帶有user claim的AuthenticationState物件
-            //return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "user")));
+            //回傳帶有user claim的AuthenticationState物件
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "user")));
 
             /** 假登入*/
             //確認localstorage裡面是否有token
-            try
-            {
-                var name = await localStorageService.GetItemAsStringAsync("authToken");
-                if (string.IsNullOrEmpty(name))
-                {
-                    //沒有的話，回傳匿名使用者
-                    return anonymous;
-                }
+            //try
+            //{
+            //    var name = await localStorageService.GetItemAsStringAsync("authToken");
+            //    if (string.IsNullOrEmpty(name))
+            //    {
+            //        //沒有的話，回傳匿名使用者
+            //        return anonymous;
+            //    }
 
-                
-                var claims = new List<Claim>()
-                {
-                    new Claim("Name", name),
-                    new Claim("role", "employee")
-                };
-                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "user")));
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                var claims = new List<Claim>()
-                {
-                    new Claim("Name", "Test"),
-                    new Claim("role", "employee")
-                };
-                //回傳帶有user claim的AuthenticationState物件
-                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "user")));
-            };
+
+            //    var claims = new List<Claim>()
+            //    {
+            //        new Claim("Name", name.Replace("\"", "")),
+            //        new Claim("role", "employee")
+            //    };
+            //    return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "user")));
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine(ex.Message);
+            //    var claims = new List<Claim>()
+            //    {
+            //        new Claim("Name", "Test"),
+            //        new Claim("role", "employee")
+            //    };
+            //    //回傳帶有user claim的AuthenticationState物件
+            //    return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "user")));
+            //};
 
 
             //var claims = new List<Claim>()

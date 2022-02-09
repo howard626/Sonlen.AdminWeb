@@ -8,7 +8,7 @@
 <body class="login-page" style="min-height: 496.781px;">
     <div class="login-box">
         <div class="login-logo">
-            <a href="../../index2.html"><b>Sonlen</b></a>
+            <b>Sonlen</b>
         </div>
         <!-- /.login-logo -->
         <div class="card">
@@ -45,9 +45,18 @@
                             </div>
                         </div>
                         <!-- /.col -->
-                        <div class="col-4">
-                            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
-                        </div>
+                        @if (IsSubmit)
+                        {
+                            <div class="col-4">
+                                <button class="btn btn-primary btn-block" disabled="disabled"> Loading... </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-4">
+                                <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                            </div>
+                        }
                         <!-- /.col -->
                     </div>
                 </EditForm>
@@ -57,7 +66,7 @@
                     <a href="forgot-password.html">I forgot my password</a>
                 </p>
                 <p class="mb-0">
-                    <a href="register.html" class="text-center">Register a new membership</a>
+                    <a href="/Register" class="text-center">Register a new membership</a>
                 </p>
             </div>
             <!-- /.login-card-body -->
@@ -68,19 +77,24 @@
 </body>
 
 @code {
+    private bool IsSubmit = false;
     private LoginModel loginModel = new LoginModel();
 
     private async Task SubmitHandlerAsync()
     {
+        IsSubmit = true;
+
         Console.WriteLine($"{loginModel.Account} / {loginModel.Password} / {loginModel.RememberMe}");
-        bool result = await loginService.LoginAsync(loginModel);
-        if (result)
+        string result = await loginService.LoginAsync(loginModel);
+        if (string.IsNullOrEmpty(result))
         {
             navigation.NavigateTo("/");
         }
         else
         {
-            await JS.InvokeVoidAsync("alert", "帳號或密碼錯誤");
+            await JS.InvokeVoidAsync("alert", result);
         }
+
+        IsSubmit = false;
     }
 }

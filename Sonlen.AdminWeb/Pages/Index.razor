@@ -1,5 +1,5 @@
 ﻿@page "/"
-
+@inject ILoginService loginService
 @attribute [Authorize]
 
 <PageTitle>Index</PageTitle>
@@ -13,7 +13,7 @@ Welcome to your new app.
 @if (authState != null)
 {
     <p>
-        Name : @authState.User.Identity.Name
+        Name : @authState.User.Identity?.Name
     </p>
 
     <ul>
@@ -29,16 +29,28 @@ Welcome to your new app.
         }
     </ul>
 }
-
+@if (employees.Count != 0)
+{
+    <GridAutoComponent Items="employees"
+                       ColumnsToExcludeCSV="LoginKey"
+                       CssClass="is-striped is-hoverable"></GridAutoComponent>
+}
 
 @code{
     [CascadingParameter]
     private Task<AuthenticationState> _authState { get; set; }
 
-    private AuthenticationState authState;
+    private AuthenticationState? authState;
+
+    private List<Employee> employees = new List<Employee>();
 
     protected override async Task OnInitializedAsync()
     {
         authState = await _authState;
+        if (authState != null)
+        {
+            employees = await loginService.GetAllEmployeeAsync() ?? new List<Employee>();
+        }
     }
+    
 }

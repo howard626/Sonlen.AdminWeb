@@ -1,0 +1,118 @@
+﻿@page "/register"
+@layout LoginLayout
+@inject IJSRuntime JS
+@inject NavigationManager navigation
+@inject ILoginService loginService
+
+<body class="hold-transition register-page">
+    <div class="register-box">
+        <div class="register-logo">
+            <b>Register</b>
+        </div>
+
+        <div class="card">
+            <div class="card-body register-card-body">
+                <p class="login-box-msg">Register a new membership</p>
+                <EditForm Model="user" OnValidSubmit="SubmitHandlerAsync">
+                    <DataAnnotationsValidator></DataAnnotationsValidator>
+                    <ValidationSummary></ValidationSummary>
+                    <div class="input-group mb-3">
+                        <InputText @bind-Value="user.Account" class="form-control" placeholder="帳號 (Email)"></InputText>
+                        <FormIconComponent icon="fa-envelope"></FormIconComponent>
+                    </div>
+                    <div class="input-group mb-3">
+                        <InputPassword @bind-Value="user.Password" class="form-control" placeholder="密碼"></InputPassword>
+                        <FormIconComponent icon="fa-lock"></FormIconComponent>
+                    </div>
+                    <div class="input-group mb-3">
+                        <InputPassword @bind-Value="user.ConfirmPassword" class="form-control" placeholder="確認密碼"></InputPassword>
+                        <FormIconComponent icon="fa-lock"></FormIconComponent>
+                    </div>
+                    <div class="input-group mb-3">
+                        <InputText @bind-Value="user.EmployeeID" class="form-control" placeholder="身分證字號" maxlength="10"></InputText>
+                        <FormIconComponent icon="fa-address-card"></FormIconComponent>
+                    </div>
+                    <div class="input-group mb-3">
+                        <InputText @bind-Value="user.EmployeeName" class="form-control" placeholder="姓名"></InputText>
+                        <FormIconComponent icon="fa-envelope"></FormIconComponent>
+                    </div>
+                    <div class="input-group mb-3">
+                        <InputText @bind-Value="user.CellPhone" class="form-control" placeholder="行動電話號碼 (09XXXXXXXX)" maxlength="10"></InputText>
+                        <FormIconComponent icon="fa-phone"></FormIconComponent>
+                    </div>
+                    <div class="input-group mb-3">
+                        <InputDate @bind-Value="user.Birthday" class="form-control" style="border-right: 1px solid #ced4da"></InputDate>
+                    </div>
+                    <div class="input-group mb-3">
+                        <InputText @bind-Value="user.BankCode" class="form-control" placeholder="銀行帳號"></InputText>
+                        <FormIconComponent icon="fa-piggy-bank"></FormIconComponent>
+                    </div>
+                    <div class="input-group mb-3">
+                        <InputText @bind-Value="user.BankAccountNO" class="form-control" placeholder="銀行編號"></InputText>
+                        <FormIconComponent icon="fa-piggy-bank"></FormIconComponent>
+                    </div>
+                    <div class="input-group mb-3">
+                        <InputText @bind-Value="user.Address" class="form-control" placeholder="地址"></InputText>
+                        <FormIconComponent icon="fa-address-card"></FormIconComponent>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="form-check">
+                            <InputRadioGroup Name="sex" @bind-Value="user.Sex">
+                                <InputRadio Name="sex" Value="@("男")" />
+                                <label> 男 </label>
+                                <InputRadio Name="sex" Value="@("女")" />
+                                <label> 女 </label>
+                            </InputRadioGroup>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-8">
+                            &nbsp;
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-4">
+                            @if (IsSubmit)
+                            {
+                                <button class="btn btn-primary" type="button" disabled>
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <span class="sr-only">Loading...</span>
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="btn btn-primary btn-block">Register</button>
+                            }
+                        </div>
+                    </div>
+
+                </EditForm>
+                <a href="/Login" class="text-center">I already have a membership</a>
+            </div>
+            <!-- /.form-box -->
+        </div><!-- /.card -->
+    </div>
+</body>
+
+@code {
+    private RegisterModel user = new RegisterModel();
+    private bool IsSubmit = false;
+
+    private void ValidFormSubmitted()
+    {
+        Console.WriteLine($"{user.Account} / {user.Password}");
+    }
+
+    private async Task SubmitHandlerAsync()
+    {
+        IsSubmit = true;
+
+        string result = await loginService.RegisterAsync(user);
+        await JS.InvokeVoidAsync("alert", result);
+        if ("註冊成功".Equals(result))
+        {
+            navigation.NavigateTo("/Login");
+        }
+
+        IsSubmit = false;
+    }
+}

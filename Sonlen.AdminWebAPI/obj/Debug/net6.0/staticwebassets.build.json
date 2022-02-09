@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "P0duOMil2t+dYjrn0SzvK73jjXW8+AeAtsvWMVFQSf8=",
+  "Hash": "pOZQdBYTBXD9Vjv0+5Gq6zGNYfpnop+JdKLzajvAyUY=",
   "Source": "Sonlen.AdminWebAPI",
   "BasePath": "_content/Sonlen.AdminWebAPI",
   "Mode": "Default",
@@ -16,40 +16,6 @@
     }
   ],
   "Assets": [
-    {
-      "Identity": "C:\\Users\\USER\\source\\repos\\Sonlen.AdminWeb\\Sonlen.AdminWebAPI\\obj\\Debug\\net6.0\\scopedcss\\bundle\\Sonlen.AdminWebAPI.styles.css",
-      "SourceId": "Sonlen.AdminWebAPI",
-      "SourceType": "Computed",
-      "ContentRoot": "C:\\Users\\USER\\source\\repos\\Sonlen.AdminWeb\\Sonlen.AdminWebAPI\\obj\\Debug\\net6.0\\scopedcss\\bundle\\",
-      "BasePath": "_content/Sonlen.AdminWebAPI",
-      "RelativePath": "Sonlen.AdminWebAPI.styles.css",
-      "AssetKind": "All",
-      "AssetMode": "CurrentProject",
-      "AssetRole": "Primary",
-      "RelatedAsset": "",
-      "AssetTraitName": "ScopedCss",
-      "AssetTraitValue": "ApplicationBundle",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\Users\\USER\\source\\repos\\Sonlen.AdminWeb\\Sonlen.AdminWebAPI\\obj\\Debug\\net6.0\\scopedcss\\bundle\\Sonlen.AdminWebAPI.styles.css"
-    },
-    {
-      "Identity": "C:\\Users\\USER\\source\\repos\\Sonlen.AdminWeb\\Sonlen.AdminWebAPI\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\Sonlen.AdminWebAPI.bundle.scp.css",
-      "SourceId": "Sonlen.AdminWebAPI",
-      "SourceType": "Computed",
-      "ContentRoot": "C:\\Users\\USER\\source\\repos\\Sonlen.AdminWeb\\Sonlen.AdminWebAPI\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\",
-      "BasePath": "_content/Sonlen.AdminWebAPI",
-      "RelativePath": "Sonlen.AdminWebAPI.bundle.scp.css",
-      "AssetKind": "All",
-      "AssetMode": "Reference",
-      "AssetRole": "Primary",
-      "RelatedAsset": "",
-      "AssetTraitName": "ScopedCss",
-      "AssetTraitValue": "ProjectBundle",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\Users\\USER\\source\\repos\\Sonlen.AdminWeb\\Sonlen.AdminWebAPI\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\Sonlen.AdminWebAPI.bundle.scp.css"
-    },
     {
       "Identity": "C:\\Users\\USER\\source\\repos\\Sonlen.AdminWeb\\Sonlen.AdminWebAPI\\wwwroot\\css\\bootstrap\\bootstrap.min.css",
       "SourceId": "Sonlen.AdminWebAPI",

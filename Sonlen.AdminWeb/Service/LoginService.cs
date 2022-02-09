@@ -17,6 +17,7 @@ namespace Sonlen.AdminWeb.Service
         private readonly ILocalStorageService localStorageService;
         private readonly HttpClient httpClient;
         private readonly AuthenticationStateProvider authenticationStateProvider;
+        private readonly string APIADDRESS = "http://localhost:5149/api/Login/";
 
         public LoginService(ILocalStorageService localStorageService, HttpClient httpClient, AuthenticationStateProvider authenticationStateProvider)
         {
@@ -25,47 +26,34 @@ namespace Sonlen.AdminWeb.Service
             this.authenticationStateProvider = authenticationStateProvider;
         }
 
-        public async Task<bool> LoginAsync(LoginModel userInfo)
+        /** 登入*/
+        public async Task<string> LoginAsync(LoginModel userInfo)
         {
-            bool result = false;
-            //var json = JsonConvert.SerializeObject(userInfo);
-            //HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+            string result = string.Empty;
+            var json = JsonConvert.SerializeObject(userInfo);
+            HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+            
+            var response = await httpClient.PostAsync($"{APIADDRESS}Login", httpContent);
+            var resContent = await response.Content.ReadAsStringAsync();
 
-            //var response = await httpClient.PostAsync("/api/Auth/Login", httpContent);
-
-            //if (response.IsSuccessStatusCode)
-            //{
-
-            //    var resContent = await response.Content.ReadAsStringAsync();
-            //    UserToken? userToken = JsonConvert.DeserializeObject<UserToken>(resContent);
-            //    if (userToken != null)
-            //    {
-            //        await localStorageService.SetItemAsync<string>("authToken", userToken.token);
-            //        ((CustomAuthStateProvider)authenticationStateProvider).NotifyUserAuthentication(userToken.token);
-
-            //        result = true;
-            //    }
-            //}
-
-            /**假登入*/
-            Employee employee = new Employee()
+            if (response.IsSuccessStatusCode)
             {
-                EmployeeName = "Test",
-                Sex = 1,
-                EmployeeID = "1",
-                Email = "test@gmail.com"
-            };
-
-            var claims = LoginInfo(employee);
-            if (claims.Count > 0)
-            {
-                await localStorageService.SetItemAsync("authToken", employee.EmployeeName);
-                ((CustomAuthStateProvider)authenticationStateProvider).FakeUserAuthentication(claims);
-                result = true;
+                UserToken? userToken = JsonConvert.DeserializeObject<UserToken>(resContent);
+                if (userToken != null)
+                {
+                    await localStorageService.SetItemAsync("authToken", userToken.token);
+                    ((CustomAuthStateProvider)authenticationStateProvider).NotifyUserAuthentication(userToken.token);
+                }
             }
+            else 
+            {
+                result = resContent;
+            }
+
             return result;
         }
 
+        /** 登出*/
         public async Task LogoutAsync()
         {
             await localStorageService.RemoveItemAsync("authToken");
@@ -73,20 +61,56 @@ namespace Sonlen.AdminWeb.Service
             httpClient.DefaultRequestHeaders.Authorization = null;
         }
 
-        /// <summary>
-        ///假登入
-        /// </summary>
-        /// <param name="userInfo"></param>
-        /// <returns></returns>
-        private List<Claim> LoginInfo(Employee employee)
+        /** 註冊*/
+        public async Task<string> RegisterAsync(RegisterModel userInfo)
         {
-            var claims = new List<Claim>()
-            {
-                new Claim("Name", employee.EmployeeName ?? string.Empty),
-                new Claim("role", "employee")
-            };
+            string result = string.Empty;
+            var json = JsonConvert.SerializeObject(userInfo);
+            HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
 
-            return claims;
+            var response = await httpClient.PostAsync($"{APIADDRESS}Register", httpContent);
+
+            if (response.IsSuccessStatusCode)
+            {
+                result = await response.Content.ReadAsStringAsync();
+            }
+
+            return result;
         }
+
+        public async Task<Employee?> GetEmployeeAsync(string id)
+        {
+            Employee? employee = null;
+            var json = JsonConvert.SerializeObject(id);
+            HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync($"{APIADDRESS}GetEmployee", httpContent);
+            var resContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                employee = JsonConvert.DeserializeObject<Employee>(resContent);
+            }
+
+            return employee;
+        }
+
+        public async Task<List<Employee>> GetAllEmployeeAsync()
+        {
+            List<Employee>? employees = null;
+            var json = JsonConvert.SerializeObject("");
+            HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync($"{APIADDRESS}GetAllEmployees", httpContent);
+            var resContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                employees = JsonConvert.DeserializeObject<List<Employee>>(resContent);
+            }
+
+            return employees ?? new List<Employee>();
+        }
+
     }
 }
