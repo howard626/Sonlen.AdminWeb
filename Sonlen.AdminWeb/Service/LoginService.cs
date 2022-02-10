@@ -78,6 +78,52 @@ namespace Sonlen.AdminWeb.Service
             return result;
         }
 
+        /** 忘記密碼*/
+        public async Task<bool> ForgotPasswordAsync(LoginModel userInfo)
+        {
+            bool result = false;
+            var json = JsonConvert.SerializeObject(userInfo);
+            HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync($"{APIADDRESS}ForgotPassword", httpContent);
+            var resContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                if (!string.IsNullOrEmpty(resContent))
+                {
+                    await localStorageService.SetItemAsync("resetPasswordToken", resContent);
+                    result = true;
+                }
+            }
+
+            return result;
+        }
+
+        /** 重設密碼*/
+        public async Task<bool> ResetPasswordAsync(ResetPasswordModel userInfo)
+        {
+            bool result = false;
+            string token = await localStorageService.GetItemAsStringAsync("resetPasswordToken");
+            
+            if (!string.IsNullOrEmpty(token) && token.Replace("\"", "").Equals(userInfo.Token))
+            {
+                var json = JsonConvert.SerializeObject(userInfo);
+                HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await httpClient.PostAsync($"{APIADDRESS}ResetPassword", httpContent);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    await localStorageService.RemoveItemAsync("resetPasswordToken");
+                    result = true;
+                }
+            }
+            
+            return result;
+        }
+
+        /** 取得員工資訊*/
         public async Task<Employee?> GetEmployeeAsync(string id)
         {
             Employee? employee = null;
@@ -95,6 +141,7 @@ namespace Sonlen.AdminWeb.Service
             return employee;
         }
 
+        /** 取得全部員工資訊*/
         public async Task<List<Employee>> GetAllEmployeeAsync()
         {
             List<Employee>? employees = null;

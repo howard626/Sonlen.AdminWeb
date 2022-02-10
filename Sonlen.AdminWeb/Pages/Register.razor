@@ -97,17 +97,15 @@
     private RegisterModel user = new RegisterModel();
     private bool IsSubmit = false;
 
-    private void ValidFormSubmitted()
-    {
-        Console.WriteLine($"{user.Account} / {user.Password}");
-    }
-
     private async Task SubmitHandlerAsync()
     {
         IsSubmit = true;
 
         string result = await loginService.RegisterAsync(user);
-        await JS.InvokeVoidAsync("alert", result);
+        if (!string.IsNullOrEmpty(result))
+        {
+            await JS.InvokeVoidAsync("alert", result);
+        }
         if ("註冊成功".Equals(result))
         {
             navigation.NavigateTo("/Login");

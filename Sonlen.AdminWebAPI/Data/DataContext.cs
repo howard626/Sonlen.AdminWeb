@@ -11,5 +11,7 @@ namespace Sonlen.AdminWebAPI.Data
         }
 
         public DbSet<Employee> Employee { get; set; }
+
+        public DbSet<ResetPassword> ResetPassword { get; set; }
     }
 }

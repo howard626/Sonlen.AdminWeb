@@ -56,4 +56,16 @@ namespace Sonlen.WebAdmin.Model
         [Display(Name = "員工性別")]
         public string Sex { get; set; } = string.Empty;
     }
+
+    public class ResetPasswordModel : LoginModel
+    {
+        [Display(Name = "確認密碼")]
+        [DataType(DataType.Password)]
+        [Compare("Password", ErrorMessage = "密碼與確認密碼不相符")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+
+        public string OldPassword { get; set; } = string.Empty;
+
+        public string Token { get; set; } = string.Empty;
+    }
 }

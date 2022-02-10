@@ -23,6 +23,30 @@ namespace Sonlen.AdminWebAPI.Service
             return _context.Employee.FirstOrDefault(u => u.Email == account && u.LoginKey == password.ToMD5());
         }
 
+        public void SetResetPasswordToken(string email, string token)
+        {
+            ResetPassword? resetPassword = _context.ResetPassword.FirstOrDefault(r => r.Email == email);
+            if (resetPassword == null)
+            {
+                resetPassword = new ResetPassword()
+                {
+                    Email = email,
+                    Token = token
+                };
+
+                _context.ResetPassword.Add(resetPassword);
+                _context.SaveChanges();
+            }
+            else 
+            {
+                resetPassword.Token = token;
+
+                _context.ResetPassword.Update(resetPassword);
+                _context.SaveChanges();
+            }
+            
+        }
+
         public string Register(RegisterModel model)
         {
             string msg = string.Empty;
@@ -55,9 +79,41 @@ namespace Sonlen.AdminWebAPI.Service
             return msg;
         }
 
-        public Employee? GetEmployee(string id)
+        public string ResetPassword(ResetPasswordModel model)
+        {
+            string msg = string.Empty;
+            if (string.IsNullOrEmpty(model.OldPassword))
+            {
+                ResetPassword resetPassword = _context.ResetPassword.FirstOrDefault(r => r.Token == model.Token) ?? new ResetPassword();
+                Employee? employee = _context.Employee.FirstOrDefault(u => u.Email == resetPassword.Email);
+                if (employee == null)
+                {
+                    msg = "帳號不存在，請重新輸入";
+                }
+                else
+                {
+                    employee.LoginKey = model.Password.ToMD5();
+                    _context.Employee.Update(employee);
+                    _context.ResetPassword.Remove(resetPassword);
+                    _context.SaveChanges();
+                }
+            }
+            else 
+            {
+
+            }
+
+            return msg;
+        }
+
+        public Employee? GetEmployeeById(string id)
         {
             return _context.Employee.FirstOrDefault(u => u.EmployeeID == id);
+        }
+
+        public Employee? GetEmployeeByEmail(string email)
+        {
+            return _context.Employee.FirstOrDefault(u => u.Email == email);
         }
     }
 }

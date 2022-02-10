@@ -25,6 +25,20 @@ namespace Sonlen.AdminWeb.Service
         Task<string> RegisterAsync(RegisterModel userInfo);
 
         /// <summary>
+        /// 忘記密碼
+        /// </summary>
+        /// <param name="userInfo"></param>
+        /// <returns></returns>
+        Task<bool> ForgotPasswordAsync(LoginModel userInfo);
+
+        /// <summary>
+        /// 重設密碼
+        /// </summary>
+        /// <param name="userInfo"></param>
+        /// <returns></returns>
+        Task<bool> ResetPasswordAsync(ResetPasswordModel userInfo);
+
+        /// <summary>
         /// 取得員工資料
         /// </summary>
         /// <param name="email"></param>
