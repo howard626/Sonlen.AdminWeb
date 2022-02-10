@@ -9,3 +9,4 @@ C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.WebAdmin.Model\obj\Debug\net6.
 C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.WebAdmin.Model\obj\Debug\net6.0\Sonlen.WebAdmin.Model.dll
 C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.WebAdmin.Model\obj\Debug\net6.0\ref\Sonlen.WebAdmin.Model.dll
 C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.WebAdmin.Model\obj\Debug\net6.0\Sonlen.WebAdmin.Model.pdb
+C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.WebAdmin.Model\obj\Debug\net6.0\Sonlen.WebAdmin.Model.csproj.AssemblyReference.cache
