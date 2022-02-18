@@ -52,6 +52,9 @@ namespace Sonlen.WebAdmin.Model
         [Display(Name = "地址")]
         public string Address { get; set; } = string.Empty;
 
+        [Display(Name = "到職日期")]
+        public DateTime? ArrivalDate { get; set; }
+
         [Required(ErrorMessage = "性別為必填欄位")]
         [Display(Name = "員工性別")]
         public string Sex { get; set; } = string.Empty;

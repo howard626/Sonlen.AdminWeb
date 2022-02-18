@@ -17,7 +17,7 @@ namespace Sonlen.AdminWeb.Service
         private readonly ILocalStorageService localStorageService;
         private readonly HttpClient httpClient;
         private readonly AuthenticationStateProvider authenticationStateProvider;
-        private readonly string APIADDRESS = "http://localhost:5149/api/Login/";
+        private readonly string APIADDRESS = $"{Setting.API_ADDRESS}Login/";
 
         public LoginService(ILocalStorageService localStorageService, HttpClient httpClient, AuthenticationStateProvider authenticationStateProvider)
         {
@@ -126,8 +126,11 @@ namespace Sonlen.AdminWeb.Service
         /** 取得員工資訊*/
         public async Task<Employee?> GetEmployeeAsync(string id)
         {
-            Employee? employee = null;
-            var json = JsonConvert.SerializeObject(id);
+            Employee employee = new Employee() 
+            {
+                EmployeeID = id
+            };
+            var json = JsonConvert.SerializeObject(employee);
             HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await httpClient.PostAsync($"{APIADDRESS}GetEmployee", httpContent);
@@ -135,7 +138,7 @@ namespace Sonlen.AdminWeb.Service
 
             if (response.IsSuccessStatusCode)
             {
-                employee = JsonConvert.DeserializeObject<Employee>(resContent);
+                employee = JsonConvert.DeserializeObject<Employee>(resContent) ?? new Employee();
             }
 
             return employee;
@@ -145,7 +148,14 @@ namespace Sonlen.AdminWeb.Service
         public async Task<List<Employee>> GetAllEmployeeAsync()
         {
             List<Employee>? employees = null;
-            var json = JsonConvert.SerializeObject("");
+            var tokenInLocalStorage = await localStorageService.GetItemAsStringAsync("authToken");
+            AuthModel<string> auth = new AuthModel<string>() 
+            {
+                Value = string.Empty,
+                Token = tokenInLocalStorage
+            };
+            var json = JsonConvert.SerializeObject(auth);
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", tokenInLocalStorage);
             HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await httpClient.PostAsync($"{APIADDRESS}GetAllEmployees", httpContent);
@@ -158,6 +168,5 @@ namespace Sonlen.AdminWeb.Service
 
             return employees ?? new List<Employee>();
         }
-
     }
 }

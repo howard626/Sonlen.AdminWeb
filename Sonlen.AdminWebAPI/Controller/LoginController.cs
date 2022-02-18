@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Sonlen.AdminWebAPI.Service;
@@ -50,7 +53,6 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("Register")]
         public ActionResult<string> Register([FromBody] RegisterModel register)
         {
-
             return Ok(_loginService.Register(register));
         }
 
@@ -60,10 +62,10 @@ namespace Sonlen.AdminWebAPI.Controller
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost("GetEmployee")]
-        public ActionResult<string> GetEmployeeById(string id)
+        public ActionResult<string> GetEmployeeById([FromBody] Employee employee)
         {
 
-            return Ok(_loginService.GetEmployeeById(id));
+            return Ok(_loginService.GetEmployeeById(employee.EmployeeID ?? string.Empty));
         }
 
         /// <summary>
@@ -72,10 +74,12 @@ namespace Sonlen.AdminWebAPI.Controller
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost("GetAllEmployees")]
-        public ActionResult<string> GetAllEmployees()
+        public ActionResult<string> GetAllEmployees(AuthModel<string> auth)
         {
-
-            return Ok(_loginService.GetAllEmployees());
+            if (CheckAuth(auth.Token))
+                return Ok(_loginService.GetAllEmployees());
+            else
+                return BadRequest("權限不足");
         }
 
         /// <summary>
@@ -97,7 +101,6 @@ namespace Sonlen.AdminWebAPI.Controller
                     using (MailMessage msg = new MailMessage())
                     {
                         msg.To.Add(loginInfo.Account);
-                        //這裡可以隨便填，不是很重要
                         msg.From = new MailAddress("howardchang@sonlen.com.tw", "神倫資訊有限公司", Encoding.UTF8);
                         /* 上面3個參數分別是發件人地址（可以隨便寫），發件人姓名，編碼*/
                         msg.Subject = "神倫資訊有限公司-忘記密碼";//郵件標題
@@ -189,6 +192,39 @@ namespace Sonlen.AdminWebAPI.Controller
             };
 
             return userToken;
+        }
+
+        /// <summary>
+        /// 檢查授權
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        private bool CheckAuth(string token)
+        {
+            if (!string.IsNullOrEmpty(token))
+            {
+                if (token.Split('.').Length == 3)
+                {
+
+                    try
+                    {
+                        var claims = JwtParser.ParseClaimsFromJwt(token);
+                        if (claims.Any())
+                        {
+                            var employee = _loginService.GetEmployeeByEmail(claims.FirstOrDefault(c => c.Type == "Email")?.Value ?? string.Empty);
+                            if (employee != null)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+            }
+            return false;
         }
     }
 }

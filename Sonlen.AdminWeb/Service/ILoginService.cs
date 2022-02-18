@@ -48,7 +48,6 @@ namespace Sonlen.AdminWeb.Service
         /// <summary>
         /// 取得全部員工資料
         /// </summary>
-        /// <param name="email"></param>
         /// <returns></returns>
         Task<List<Employee>> GetAllEmployeeAsync();
     }

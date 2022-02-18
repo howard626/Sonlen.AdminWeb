@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "pOZQdBYTBXD9Vjv0+5Gq6zGNYfpnop+JdKLzajvAyUY=",
+  "Hash": "EN8Mk1FBpAC8iNRRU2Afyz4i/AQYqdeT4HHtyi5Btsw=",
   "Source": "Sonlen.AdminWebAPI",
   "BasePath": "_content/Sonlen.AdminWebAPI",
   "Mode": "Default",
@@ -16,6 +16,23 @@
     }
   ],
   "Assets": [
+    {
+      "Identity": "C:\\Users\\USER\\.nuget\\packages\\microsoft.aspnetcore.components.webassembly.authentication\\6.0.2\\staticwebassets\\AuthenticationService.js",
+      "SourceId": "Microsoft.AspNetCore.Components.WebAssembly.Authentication",
+      "SourceType": "Package",
+      "ContentRoot": "C:\\Users\\USER\\.nuget\\packages\\microsoft.aspnetcore.components.webassembly.authentication\\6.0.2\\staticwebassets\\",
+      "BasePath": "_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication",
+      "RelativePath": "AuthenticationService.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "C:\\Users\\USER\\.nuget\\packages\\microsoft.aspnetcore.components.webassembly.authentication\\6.0.2\\staticwebassets\\AuthenticationService.js"
+    },
     {
       "Identity": "C:\\Users\\USER\\source\\repos\\Sonlen.AdminWeb\\Sonlen.AdminWebAPI\\wwwroot\\css\\bootstrap\\bootstrap.min.css",
       "SourceId": "Sonlen.AdminWebAPI",

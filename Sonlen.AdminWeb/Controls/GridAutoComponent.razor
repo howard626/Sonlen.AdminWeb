@@ -8,11 +8,11 @@
             <tr>
                 @foreach (var property in propertyInfo)
                 {
-                    @if(!ColumnsToExcludeCSV.Contains(property.Name))
-                    { 
+                    @if (!ColumnsToExcludeCSV.Contains(property.Name))
+                    {
                         <th>
                             @property.Name
-                        </th>   
+                        </th>
                     }
                 }
             </tr>
@@ -20,17 +20,33 @@
         <tbody>
             @foreach (var item in Items)
             {
-            <tr>
-                @foreach (var property in propertyInfo)
-                {
-                    @if (!ColumnsToExcludeCSV.Contains(property.Name))
+                <tr>
+                    @foreach (var property in propertyInfo)
                     {
-                        <td>
-                            @property.GetValue(item)
-                        </td>
+                        @if (!ColumnsToExcludeCSV.Contains(property.Name))
+                        {
+                            @if (property.Name.Equals(ColumnToLink))
+                            {
+                                <td>
+                                    <a href="@Link/@property.GetValue(item)"> @property.GetValue(item) </a>
+                                </td>
+                            }
+                            else
+                            {
+                                <td>
+                                    @if (property.PropertyType.Name.Equals("Nullable`1"))
+                                    {
+                                        @property.GetValue(item)?.ToString()?.Split(' ')[0]
+                                    }
+                                    else
+                                    {
+                                        @property.GetValue(item)
+                                    }
+                                </td>
+                            }
+                        }
                     }
-                }
-            </tr>
+                </tr>
             }
         </tbody>
     </table>
@@ -58,4 +74,10 @@
 
     [Parameter]
     public string CssClass { get; set; } = string.Empty;
+
+    [Parameter]
+    public string ColumnToLink { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Link { get; set; } = string.Empty;
 }

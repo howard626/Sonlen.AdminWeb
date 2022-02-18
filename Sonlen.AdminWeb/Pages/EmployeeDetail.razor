@@ -1,0 +1,153 @@
+﻿@page "/Employee/{id}"
+
+@inject IEmployeeService employeeService
+@inject IJSRuntime JS
+@inject NavigationManager navigation
+@attribute [Authorize]
+
+@if (LoadingComplete && employee != null)
+{
+    <div class="card card-primary">
+        <div class="card-header">
+            <h3 class="card-title">員工資料</h3>
+
+            <div class="card-tools">
+                <a href="Employee" class="btn btn-secondary"> 返回員工清單 </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label> 員工名稱 </label>
+                <input type="text" @bind-value="employee.EmployeeName" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label> 身份證字號 </label>
+                <input type="text" class="form-control" value="@employee?.EmployeeID" disabled>
+            </div>
+            <div class="form-group">
+                <label> 郵件信箱 </label>
+                <input type="text" class="form-control" @bind-value="employee.Email">
+            </div>
+            <div class="form-group">
+                <label> 到工日期 </label>
+                <input type="date" class="form-control" @bind-value="employee.ArrivalDate" >
+            </div>
+            <div class="form-group">
+                <label> 員工生日 </label>
+                <input type="date" class="form-control" @bind-value="employee.Birthday" >
+            </div>
+            <div class="form-group">
+                <label> 銀行編號 </label>
+                <input type="text" @bind-value="employee.BankCode" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label> 銀行帳號 </label>
+                <input type="text" @bind-value="employee.BankAccountNO" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label> 手機號碼 </label>
+                <input type="text" @bind-value="employee.CellPhone" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label> 員工性別 </label>
+                <input type="text" class="form-control" value="@(employee?.Sex == 1 ? "男" : "女")" disabled>
+            </div>
+            <div class="form-group">
+                <label> 居住地址 </label>
+                <input type="text" @bind-value="employee.Address" class="form-control" />
+            </div>
+        </div>
+        <!-- /.card-body -->
+    <div class="row">
+            <div class="col-12">
+                <button class="btn btn-success float-right" @onclick="Update">儲存變更</button>
+                <button class="btn btn-danger float-right" @onclick="Delete">刪除員工</button>
+            </div>
+        </div>
+    </div>
+
+}
+else
+{
+    <div>
+        Loading...
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string id { get; set; } = string.Empty;
+
+    private Employee? employee { get; set; }
+
+    private bool LoadingComplete = false;
+
+    private string ShowArrivalDate { get; set; } = string.Empty;
+
+    private string ShowBirthday { get; set; } = string.Empty;
+
+    protected override async void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (!string.IsNullOrEmpty(id))
+        {
+            employee = await employeeService.GetEmployeeAsync(id);
+            LoadingComplete = true;
+
+            if (employee == null)
+            {
+                await JS.InvokeVoidAsync("alert", "沒有此員工");
+                navigation.NavigateTo("/Employee");
+            }
+            else
+            {
+                ShowArrivalDate = employee.ArrivalDate.ToTWDateString() ?? string.Empty;
+                ShowBirthday = employee.Birthday.ToTWDateString() ?? string.Empty;
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task Update()
+    {
+        LoadingComplete = false;
+
+        if (employee != null)
+        {
+            //if (!string.IsNullOrEmpty(ShowArrivalDate))
+            //{
+            //    ShowArrivalDate = ShowArrivalDate.Replace("/", "").PadLeft(7, '0');
+            //    employee.ArrivalDate = new DateTime(int.Parse(ShowArrivalDate.Substring(0, 3)), int.Parse(ShowArrivalDate.Substring(3, 2)), int.Parse(ShowArrivalDate.Substring(5, 2))).AddYears(1911);
+            //}
+            //if (!string.IsNullOrEmpty(ShowBirthday))
+            //{
+            //    ShowBirthday = ShowBirthday.Replace("/", "").PadLeft(7, '0');
+            //    employee.Birthday = new DateTime(int.Parse(ShowBirthday.Substring(0, 3)), int.Parse(ShowBirthday.Substring(3, 2)), int.Parse(ShowBirthday.Substring(5, 2))).AddYears(1911);
+            //}
+            string result = await employeeService.UpdateEmployeeAsync(employee);
+            await JS.InvokeVoidAsync("alert", result);
+        }
+
+        LoadingComplete = true;
+    }
+
+    private async Task Delete()
+    {
+        LoadingComplete = false;
+
+        if (employee != null)
+        {
+            string result = await employeeService.DeleteEmployeeAsync(employee);
+            await JS.InvokeVoidAsync("alert", result);
+
+            if ("刪除員工成功".Equals(result))
+            {
+                navigation.NavigateTo("/Employee");
+            }
+        }
+
+        LoadingComplete = true;
+    }
+}

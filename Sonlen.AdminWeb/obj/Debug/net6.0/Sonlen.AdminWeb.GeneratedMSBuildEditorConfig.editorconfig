@@ -30,8 +30,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29udHJvbHNcR3JpZEF1dG9Db21wb25lbnQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/USER/source/repos/Sonlen.AdminWeb/Sonlen.AdminWeb/Pages/AddEmployee.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRkRW1wbG95ZWUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/USER/source/repos/Sonlen.AdminWeb/Sonlen.AdminWeb/Pages/AllEmployee.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWxsRW1wbG95ZWUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/USER/source/repos/Sonlen.AdminWeb/Sonlen.AdminWeb/Pages/Counter.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291bnRlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/USER/source/repos/Sonlen.AdminWeb/Sonlen.AdminWeb/Pages/EmployeeDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRW1wbG95ZWVEZXRhaWwucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/USER/source/repos/Sonlen.AdminWeb/Sonlen.AdminWeb/Pages/FetchData.razor]

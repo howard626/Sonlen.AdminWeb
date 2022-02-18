@@ -1,10 +1,7 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
-using Newtonsoft.Json;
-using Sonlen.WebAdmin.Model;
 using Sonlen.WebAdmin.Model.Utility;
 using System.Security.Claims;
-using System.Text;
 
 namespace Sonlen.AdminWeb.Auth
 {
@@ -39,46 +36,6 @@ namespace Sonlen.AdminWeb.Auth
 
             //回傳帶有user claim的AuthenticationState物件
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "user")));
-
-            /** 假登入*/
-            //確認localstorage裡面是否有token
-            //try
-            //{
-            //    var name = await localStorageService.GetItemAsStringAsync("authToken");
-            //    if (string.IsNullOrEmpty(name))
-            //    {
-            //        //沒有的話，回傳匿名使用者
-            //        return anonymous;
-            //    }
-
-
-            //    var claims = new List<Claim>()
-            //    {
-            //        new Claim("Name", name.Replace("\"", "")),
-            //        new Claim("role", "employee")
-            //    };
-            //    return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "user")));
-            //}
-            //catch (Exception ex)
-            //{
-            //    Console.WriteLine(ex.Message);
-            //    var claims = new List<Claim>()
-            //    {
-            //        new Claim("Name", "Test"),
-            //        new Claim("role", "employee")
-            //    };
-            //    //回傳帶有user claim的AuthenticationState物件
-            //    return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "user")));
-            //};
-
-
-            //var claims = new List<Claim>()
-            //{
-            //    new Claim("Name", "Test"),
-            //    new Claim("role", "employee")
-            //};
-            ////回傳帶有user claim的AuthenticationState物件
-            //return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "user")));
         }
 
         public void NotifyUserAuthentication(string json)

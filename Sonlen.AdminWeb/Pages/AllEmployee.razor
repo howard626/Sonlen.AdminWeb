@@ -1,0 +1,24 @@
+﻿@page "/Employee"
+@inject IEmployeeService employeeService
+@attribute [Authorize]
+
+<h3>AllEmployee</h3>
+<a href="/Employee/Add"> Add Employee</a>
+
+@if (employees.Count != 0)
+{
+    <GridAutoComponent Items="employees"
+                       ColumnsToExcludeCSV="LoginKey,Sex,BankCode,BankAccountNO,Address"
+                       CssClass=""
+                       ColumnToLink="EmployeeID"
+                       Link="Employee"></GridAutoComponent>
+}
+
+@code {
+    private List<Employee> employees = new List<Employee>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        employees = await employeeService.GetAllEmployeeAsync() ?? new List<Employee>();   
+    }
+}
