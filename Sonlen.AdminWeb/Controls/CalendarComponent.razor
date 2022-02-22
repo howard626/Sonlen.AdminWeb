@@ -1,0 +1,63 @@
+﻿
+<div>
+    @(Year + "年" + Month + "月")
+    <button class="btn btn-success float-right" @onclick="PlusMonth"> v </button>
+    <button class="btn btn-success float-right" @onclick="MinMonth"> ^ </button>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            @foreach (var head in THead)
+            {
+                <th>
+                    @head
+                </th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0, day = 1; i < 5; i++)
+        {
+            <tr>
+                @for (int j = i == 0 ? FirstDay : 0; j < 7 && day <= TotalDay; j++, day++)
+                {
+                    <td>
+                        @day
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    public int Year { get; set; } = DateTime.Now.Year;
+
+    public int Month { get; set; } = DateTime.Now.Month;
+
+    public DateTime ShowDate { get; set; } = DateTime.Now;
+
+    private int FirstDay { get { return (int)new DateTime(Year, Month, 1).DayOfWeek; } }
+
+    private int TotalDay { get { return (int)new DateTime(Year, Month, 1).Day; } }
+
+    private string[] THead = { "日", "一", "二", "三", "四", "五", "六" };
+
+    private void PlusMonth()
+    {
+        ShowDate = ShowDate.AddMonths(1);
+        Year = ShowDate.Year;
+        Month = ShowDate.Month;
+        StateHasChanged();
+    }
+
+    private void MinMonth()
+    {
+        ShowDate = ShowDate.AddMonths(-1);
+        Year = ShowDate.Year;
+        Month = ShowDate.Month;
+        StateHasChanged();
+    }
+
+}

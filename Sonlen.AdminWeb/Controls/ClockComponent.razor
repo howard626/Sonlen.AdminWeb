@@ -1,0 +1,36 @@
+﻿@using System.Timers
+@implements IDisposable
+
+<div style="font-size:@(Size + "px")"> @dateTime </div>
+
+@code {
+    [Parameter]
+    public string Size { get; set; } = "20";
+
+    private Timer? timer;
+
+    private string dateTime { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        dateTime = DateTime.Now.ToString("F");
+
+        timer = new Timer();
+        timer.Interval = 1000;
+        timer.Elapsed += OnTimerElapsed;
+        timer.Enabled = true;
+    }
+
+    private void OnTimerElapsed(object? sender, ElapsedEventArgs e)
+    {
+        dateTime = DateTime.Now.ToString("F");
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        timer.Dispose();
+    }
+}

@@ -1,0 +1,29 @@
+﻿@page "/Punch"
+
+@inject IPunchService punchService
+@inject IJSRuntime JS
+@inject NavigationManager navigation
+@attribute [Authorize]
+<h3>Punch</h3>
+
+<ClockComponent Size="40"></ClockComponent>
+
+<div class="row">
+        <div class="col-12">
+            <button class="btn btn-danger float-right" @onclick="PunchOut">下班</button>
+            <button class="btn btn-success float-right" @onclick="PunchIn">上班</button>
+        </div>
+</div>
+@code {
+    private async Task PunchIn()
+    {
+        string result = await punchService.PunchInAsync();
+        await JS.InvokeVoidAsync("alert", result);
+    }
+
+    private async Task PunchOut()
+    {
+        string result = await punchService.PunchOutAsync();
+        await JS.InvokeVoidAsync("alert", result);
+    }
+}

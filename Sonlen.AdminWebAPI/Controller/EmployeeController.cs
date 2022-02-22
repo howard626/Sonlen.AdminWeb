@@ -9,22 +9,17 @@ namespace Sonlen.AdminWebAPI.Controller
     [ApiController]
     public class EmployeeController : ControllerBase
     {
-
-        private readonly IConfiguration configuration;
-        private readonly IEmployeeService _employeeService;
         private readonly IEmployeeDapperService _employeeDapperService;
 
-        public EmployeeController(IConfiguration configuration, IEmployeeService employeeService, IEmployeeDapperService employeeDapperService)
+        public EmployeeController(IEmployeeDapperService employeeDapperService)
         {
-            this.configuration = configuration;
-            _employeeService = employeeService;
             _employeeDapperService = employeeDapperService;
         }
 
         /// <summary>
         /// 取得員工資料
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="employee"></param>
         /// <returns></returns>
         [HttpPost("Add")]
         public ActionResult<string> AddEmployee([FromBody] Employee employee)
@@ -77,7 +72,7 @@ namespace Sonlen.AdminWebAPI.Controller
         /// <summary>
         /// 取得員工資料
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="employee"></param>
         /// <returns></returns>
         [HttpPost("GetEmployee")]
         public ActionResult<string> GetEmployeeById([FromBody] Employee employee)
@@ -88,7 +83,6 @@ namespace Sonlen.AdminWebAPI.Controller
         /// <summary>
         /// 取得全部員工資料
         /// </summary>
-        /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost("GetAllEmployees")]
         public ActionResult<string> GetAllEmployees()

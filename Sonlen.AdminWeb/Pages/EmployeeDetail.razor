@@ -30,11 +30,11 @@
             </div>
             <div class="form-group">
                 <label> 到工日期 </label>
-                <input type="date" class="form-control" @bind-value="employee.ArrivalDate" >
+                <input type="date" class="form-control" @bind-value="employee.ArrivalDate">
             </div>
             <div class="form-group">
                 <label> 員工生日 </label>
-                <input type="date" class="form-control" @bind-value="employee.Birthday" >
+                <input type="date" class="form-control" @bind-value="employee.Birthday">
             </div>
             <div class="form-group">
                 <label> 銀行編號 </label>
@@ -58,14 +58,13 @@
             </div>
         </div>
         <!-- /.card-body -->
-    <div class="row">
-            <div class="col-12">
-                <button class="btn btn-success float-right" @onclick="Update">儲存變更</button>
-                <button class="btn btn-danger float-right" @onclick="Delete">刪除員工</button>
-            </div>
+        <div class="row">
+                <div class="col-12">
+                    <button class="btn btn-success float-right" @onclick="Update">儲存變更</button>
+                    <button class="btn btn-danger float-right" @onclick="Delete">刪除員工</button>
+                </div>
         </div>
     </div>
-
 }
 else
 {
@@ -82,10 +81,6 @@ else
 
     private bool LoadingComplete = false;
 
-    private string ShowArrivalDate { get; set; } = string.Empty;
-
-    private string ShowBirthday { get; set; } = string.Empty;
-
     protected override async void OnInitialized()
     {
         base.OnInitialized();
@@ -100,11 +95,6 @@ else
                 await JS.InvokeVoidAsync("alert", "沒有此員工");
                 navigation.NavigateTo("/Employee");
             }
-            else
-            {
-                ShowArrivalDate = employee.ArrivalDate.ToTWDateString() ?? string.Empty;
-                ShowBirthday = employee.Birthday.ToTWDateString() ?? string.Empty;
-            }
         }
 
         StateHasChanged();
@@ -116,16 +106,6 @@ else
 
         if (employee != null)
         {
-            //if (!string.IsNullOrEmpty(ShowArrivalDate))
-            //{
-            //    ShowArrivalDate = ShowArrivalDate.Replace("/", "").PadLeft(7, '0');
-            //    employee.ArrivalDate = new DateTime(int.Parse(ShowArrivalDate.Substring(0, 3)), int.Parse(ShowArrivalDate.Substring(3, 2)), int.Parse(ShowArrivalDate.Substring(5, 2))).AddYears(1911);
-            //}
-            //if (!string.IsNullOrEmpty(ShowBirthday))
-            //{
-            //    ShowBirthday = ShowBirthday.Replace("/", "").PadLeft(7, '0');
-            //    employee.Birthday = new DateTime(int.Parse(ShowBirthday.Substring(0, 3)), int.Parse(ShowBirthday.Substring(3, 2)), int.Parse(ShowBirthday.Substring(5, 2))).AddYears(1911);
-            //}
             string result = await employeeService.UpdateEmployeeAsync(employee);
             await JS.InvokeVoidAsync("alert", result);
         }
