@@ -1,11 +1,142 @@
 ﻿@page "/Leave"
 @using Sonlen.AdminWeb.Controls
+@inject ILeaveService leaveService
+@inject IJSRuntime JS
+@attribute [Authorize]
 
 <h3>Leave</h3>
 
-<CalendarComponent @ref="ShowDate">
+<CalendarComponent SelectDateEvent="ChoseDate">
 </CalendarComponent>
 
+<br />
+<p>
+    請假類別： 
+    <select @bind="model.LeaveType">
+        @foreach (var leaveType in leaveTypes)
+        {
+            <option value="@leaveType.Id">@leaveType.LeaveName ( @leaveType.LeaveDesc )</option>
+        }
+    </select>
+</p>
+請假時間： <input type="text" @bind-value="@model.LeaveStartTime" @bind-value:event="oninput" /> ~
+           <input type="text" @bind-value="@model.LeaveEndTime" @bind-value:event="oninput" />
+請假佐證： <InputFile OnChange="@OnInputFileChange"></InputFile>
+<br />
+<button class="btn btn-danger" @onclick="LeaveClick">請假</button>
+<ConfirmComponent @ref="LeaveConfirmation" ConfirmationChanged="LeaveConfirmClick"
+         ConfirmationTitle=@("請假確認")
+         ConfirmationMessage=@($"您確定要在 {model.LeaveDate.ToTWDateString()} 這天請假嗎？")>
+</ConfirmComponent>
+
+@if (leaveRecords.Count != 0)
+{
+    <div class="card">
+    <div class="card-header border-0">
+
+        <h3 class="card-title">
+            <i class="far fa-clock"></i>
+            請假紀錄
+        </h3>
+    </div>
+    <!-- /.card-header -->
+    <div class="card-body pt-0">
+        <!--The calendar -->
+        <GridAutoComponent Items="leaveRecords"
+                            ColumnsToExcludeCSV="LeaveType, Accept, LeaveStartTime, LeaveEndTime"
+                            CssClass="table-hover text-nowrap"
+                            Row="5"></GridAutoComponent>
+    </div>
+    <!-- /.card-body -->
+</div>
+    
+}
+
 @code {
-    private CalendarComponent ShowDate{ get; set; }
+    private LeaveViewModel model { get; set; } = new LeaveViewModel();
+
+    public DateTime ShowDate { get; set; } = DateTime.Now;
+
+    private int LeaveType { get; set; }
+
+    private UploadFile uploadFile { get; set; } = new UploadFile();
+
+    private List<LeaveType> leaveTypes { get; set; } = new List<LeaveType>();
+
+    private List<LeaveRecordViewModel> leaveRecords = new List<LeaveRecordViewModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        leaveTypes = await leaveService.GetLeaveTypesAsync() ?? new List<LeaveType>();
+        leaveRecords = await leaveService.GetLeaveRecordByEIDAsync() ?? new List<LeaveRecordViewModel>();
+
+        if (leaveRecords.Count > 0 && leaveTypes.Count > 0)
+        {
+            leaveRecords.ForEach(record => {
+                record.LeaveDesc = leaveTypes.FirstOrDefault(type => type.Id == record.LeaveType)?.LeaveName ?? string.Empty;
+                switch (record.Accept)
+                {
+                    case -1: record.AcceptDesc = "駁回"; break;
+                    case 0: record.AcceptDesc = "未審"; break;
+                    case 1: record.AcceptDesc = "同意"; break;
+                    default : record.AcceptDesc = "？？"; break;
+                }
+                record.LeaveDateDesc = $"{record.LeaveDate.ToTWDateString()} {record.LeaveStartTime} ~ {record.LeaveEndTime}";
+            });
+        }
+
+    }
+
+    protected void ChoseDate(DateTime selectDate)
+    {
+        model.LeaveDate = selectDate;
+    }
+
+    protected ConfirmComponent? LeaveConfirmation { get; set; }
+
+    protected void LeaveClick()
+    {
+        LeaveConfirmation?.Show();
+    }
+
+    protected async Task LeaveConfirmClick(bool confirmed)
+    {
+        if (confirmed)
+        {
+            string result = await leaveService.LeaveOnAsync(model);
+            await JS.InvokeVoidAsync("alert", result);
+            leaveRecords = await leaveService.GetLeaveRecordByEIDAsync() ?? new List<LeaveRecordViewModel>();
+
+            if (leaveRecords.Count > 0 && leaveTypes.Count > 0)
+            {
+                leaveRecords.ForEach(record => {
+                    record.LeaveDesc = leaveTypes.FirstOrDefault(type => type.Id == record.LeaveType)?.LeaveName ?? string.Empty;
+                    switch (record.Accept)
+                    {
+                        case -1: record.AcceptDesc = "駁回"; break;
+                        case 0: record.AcceptDesc = "未審"; break;
+                        case 1: record.AcceptDesc = "同意"; break;
+                        default : record.AcceptDesc = "？？"; break;
+                    }
+                    record.LeaveDateDesc = $"{record.LeaveDate.ToTWDateString()} {record.LeaveStartTime} ~ {record.LeaveEndTime}";
+                });
+            }
+        }
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        var buffer = new byte[file.Size];
+        await file.OpenReadStream().ReadAsync(buffer);
+
+        UploadFile uploadFile = new UploadFile()
+        {
+            FileContent = buffer,
+            FileName = file.Name
+        };
+
+        model.File = uploadFile;
+    }
 }

@@ -17,9 +17,10 @@
                 }
             </tr>
         </thead>
-        <tbody>
-            @foreach (var item in Items)
+        <tbody style="text-align:center">
+            @for(int i = (Page - 1) * Row; i <  TotalData; i++)
             {
+                var item = Items[i];
                 <tr>
                     @foreach (var property in propertyInfo)
                     {
@@ -48,7 +49,21 @@
                     }
                 </tr>
             }
+            
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="@propertyInfo.Count()" title="Select Month" style="text-align:center"> 
+                    <button class="btn" disabled="@IsFirstPage">
+                        <span class="fa fa-chevron-left" title="Previous Page" @onclick="PrePage" ></span>
+                    </button>
+                    @(Page + "/" + TotalPage + "頁") 
+                    <button class="btn" disabled="@IsFinalPage">
+                        <span class="fa fa-chevron-right" title="Next Page" @onclick="NextPage"></span>
+                    </button>
+                </td>
+            </tr>
+        </tfoot>
     </table>
 }
 
@@ -63,7 +78,33 @@
         {
             Type typeofItem = Items[0].GetType();
             propertyInfo = typeofItem.GetProperties();
+            TotalData = (Items.Count < Page * Row) ? Items.Count : Page * Row;
+            TotalPage = Items.Count / Row;
+            if (Items.Count % Row != 0)
+            {
+                TotalPage++;
+            }
+            IsFinalPage = Page == TotalPage;
+            IsFirstPage = Page == 1;
         }
+    }
+
+    private void NextPage()
+    {
+        Page++;
+        IsFirstPage = Page == 1;
+        IsFinalPage = Page == TotalPage;
+        TotalData = (Items.Count < Page * Row) ? Items.Count : Page * Row;
+        StateHasChanged();
+    }
+
+    private void PrePage()
+    {
+        Page--;
+        IsFirstPage = Page == 1;
+        IsFinalPage = Page == TotalPage;
+        TotalData = (Items.Count < Page * Row) ? Items.Count : Page * Row;
+        StateHasChanged();
     }
 
     [Parameter]
@@ -80,4 +121,18 @@
 
     [Parameter]
     public string Link { get; set; } = string.Empty;
+
+    [Parameter]
+    public int Page { get; set; } = 1;
+
+    [Parameter]
+    public int Row { get; set; } = 10;
+
+    private int TotalData { get; set; }
+
+    private int TotalPage{ get; set; }
+
+    private bool IsFirstPage { get; set; }
+
+    private bool IsFinalPage { get; set; }
 }

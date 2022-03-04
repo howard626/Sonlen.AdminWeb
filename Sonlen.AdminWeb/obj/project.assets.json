@@ -2163,6 +2163,8 @@
           "Dapper": "2.0.123",
           "Microsoft.AspNet.WebApi.Core": "5.2.7",
           "Microsoft.AspNetCore.Authorization": "6.0.2",
+          "Microsoft.AspNetCore.Http.Abstractions": "2.2.0",
+          "Microsoft.Extensions.Logging": "6.0.0",
           "System.Data.SqlClient": "4.8.3"
         },
         "compile": {
@@ -4293,6 +4295,8 @@
           "Dapper": "2.0.123",
           "Microsoft.AspNet.WebApi.Core": "5.2.7",
           "Microsoft.AspNetCore.Authorization": "6.0.2",
+          "Microsoft.AspNetCore.Http.Abstractions": "2.2.0",
+          "Microsoft.Extensions.Logging": "6.0.0",
           "System.Data.SqlClient": "4.8.3"
         },
         "compile": {

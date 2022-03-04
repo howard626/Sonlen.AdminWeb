@@ -38,7 +38,7 @@ namespace Sonlen.AdminWebAPI.Service
                     {
                         EmployeeID = employee.EmployeeID,
                         PunchDate = DateTime.Today,
-                        PunchInTime = $"{now.Hour}:{now.Minute}",
+                        PunchInTime = $"{now.Hour.ToString().PadLeft(2, '0')}:{now.Minute.ToString().PadLeft(2, '0')}",
                         PunchOutTime = null,
                         WorkHour = null
                     };
@@ -70,11 +70,11 @@ namespace Sonlen.AdminWebAPI.Service
                 {
                     if (string.IsNullOrEmpty(punch.PunchOutTime))
                     {
-
                         DateTime now = DateTime.Now;
-                        int hour = now.Hour - int.Parse(punch.PunchInTime.Split(':')[0]);
+                        int punchInHour = int.Parse(punch.PunchInTime.Split(':')[0]);
+                        int hour = now.Hour - punchInHour;
                         int min = now.Minute - int.Parse(punch.PunchInTime.Split(':')[1]);
-                        if (now.Hour > 14 && hour > 4)
+                        if (now.Hour >= 13 && punchInHour <= 13)
                         {
                             hour -= 1;
                         }
@@ -84,7 +84,7 @@ namespace Sonlen.AdminWebAPI.Service
                             hour -= 1;
                         }
                         decimal workHour = hour + (decimal)min / 60;
-                        punch.PunchOutTime = $"{now.Hour}:{now.Minute}";
+                        punch.PunchOutTime = $"{now.Hour.ToString().PadLeft(2, '0')}:{now.Minute.ToString().PadLeft(2, '0')}";
                         punch.WorkHour = workHour;
 
                         parameters = punch.ToDynamicParameters();

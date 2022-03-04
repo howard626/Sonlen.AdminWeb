@@ -97,8 +97,8 @@ namespace Sonlen.AdminWebAPI.Controller
                     using (MailMessage msg = new MailMessage())
                     {
                         msg.To.Add(loginInfo.Account);
-                        msg.From = new MailAddress("howardchang@sonlen.com.tw", "神倫資訊有限公司", Encoding.UTF8);
-                        /* 上面3個參數分別是發件人地址（可以隨便寫），發件人姓名，編碼*/
+                        msg.From = new MailAddress(configuration["Email:DefaultAccount"], "神倫資訊有限公司", Encoding.UTF8);
+                        /* 上面3個參數分別是發件人地址，發件人姓名，編碼*/
                         msg.Subject = "神倫資訊有限公司-忘記密碼";//郵件標題
                         msg.SubjectEncoding = Encoding.UTF8;//郵件標題編碼
                         msg.Body = $"有人申請重設密碼，如果是您本人申請的<a href=\"https://localhost:44341/ResetPassword/{loginInfo.Account}/{token}\">請點選此處</a>。"; //郵件內容
@@ -109,7 +109,7 @@ namespace Sonlen.AdminWebAPI.Controller
 
                         using (SmtpClient client = new SmtpClient("smtp.gmail.com", 587))
                         {
-                            client.Credentials = new System.Net.NetworkCredential("howardchang@sonlen.com.tw", "H626LEmm@"); //這裡要填正確的帳號跟密碼
+                            client.Credentials = new System.Net.NetworkCredential(configuration["Email:DefaultAccount"], configuration["Email:DefaultPassword"]); //寄送 gmail 的帳號
                             client.EnableSsl = true; //gmail預設開啟驗證
                             client.Send(msg); //寄出信件
                         }

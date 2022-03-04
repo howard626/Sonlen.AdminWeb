@@ -42,7 +42,7 @@ namespace Sonlen.AdminWeb.Service
                 if (userToken != null)
                 {
                     await localStorageService.SetItemAsync("authToken", userToken.token);
-                    ((CustomAuthStateProvider)authenticationStateProvider).NotifyUserAuthentication(userToken.token);
+                    ((CustomAuthStateProvider)authenticationStateProvider).NotifyUserAuthentication(userToken.token ?? string.Empty);
                 }
             }
             else 

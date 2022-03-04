@@ -1,35 +1,110 @@
-﻿
-<div>
-    @(Year + "年" + Month + "月")
-    <button class="btn btn-success float-right" @onclick="PlusMonth"> v </button>
-    <button class="btn btn-success float-right" @onclick="MinMonth"> ^ </button>
-</div>
+﻿<style>
+    #calendar .prev,
+    #calendar .next,
+    #calendar td.day {
+        cursor: pointer;
+    }
 
-<table>
-    <thead>
-        <tr>
-            @foreach (var head in THead)
-            {
-                <th>
-                    @head
-                </th>
-            }
-        </tr>
-    </thead>
-    <tbody>
-        @for (int i = 0, day = 1; i < 5; i++)
-        {
-            <tr>
-                @for (int j = i == 0 ? FirstDay : 0; j < 7 && day <= TotalDay; j++, day++)
-                {
-                    <td>
-                        @day
-                    </td>
-                }
-            </tr>
-        }
-    </tbody>
-</table>
+    #calendar td:hover {
+        background-color: lightgray;
+    }
+
+    #calendar td.old, td.new {
+        color: #6c757d;
+    }
+
+    #calendar td ,th {
+        text-align: center;
+    }
+
+    #calendar td.active{
+        background-color: yellow;
+    }
+ </style>
+
+<div class="card">
+    <div class="card-header border-0">
+
+        <h3 class="card-title">
+            <i class="far fa-calendar-alt"></i>
+            Calendar
+        </h3>
+        <!-- tools card -->
+        <div class="card-tools">
+            <!-- button with a dropdown -->
+        </div>
+        <!-- /. tools -->
+    </div>
+    <!-- /.card-header -->
+    <div class="card-body pt-0">
+        <!--The calendar -->
+        <div id="calendar" style="width: 100%">
+            <div class="bootstrap-datetimepicker-widget usetwentyfour">
+                <ul class="list-unstyled">
+                    <li class="show">
+                        <div class="datepicker">
+                            <div class="datepicker-days" style="">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th class="prev">
+                                                <span class="fa fa-chevron-left" title="Previous Month" @onclick="MinMonth"></span>
+                                            </th>
+                                            <th colspan="5" title="Select Month"> @(Year + "年" + Month + "月") </th>
+                                            <th class="next">
+                                                <span class="fa fa-chevron-right" title="Next Month" @onclick="PlusMonth"></span>
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            @foreach (var head in THead)
+                                            {
+                                                <th class="dow">
+                                                    @head
+                                                </th>
+                                            }
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int i = 0, day = 1; day <= TotalDay; i++)
+                                        {
+                                            <tr>
+                                                @for (int j = 0; j < 7; j++)
+                                                {
+                                                    @if (i == 0 && j < FirstDay)
+                                                    {
+                                                        <td class="day old">
+                                                            @(PreLastDay - FirstDay + j + 1)
+                                                        </td>
+                                                    }
+                                                    else if (day > TotalDay)
+                                                    {
+                                                        <td class="day new">
+                                                            @NextFirstDay
+                                                        </td>
+                                                        NextFirstDay++;
+                                                    }
+                                                    else
+                                                    {
+                                                        int dayTemp = day;
+                                                        <td class="day @(ChoseDay == dayTemp ? "active" : "")" @onclick="() => ChoseDateEvent(dayTemp)">
+                                                            @day
+                                                        </td>
+                                                        day++;
+                                                    }
+                                                }
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- /.card-body -->
+</div>
 
 @code {
     public int Year { get; set; } = DateTime.Now.Year;
@@ -38,26 +113,50 @@
 
     public DateTime ShowDate { get; set; } = DateTime.Now;
 
+    public DateTime PreDate { get; set; } = DateTime.Now.AddMonths(-1);
+
+    [Parameter]
+    public EventCallback<DateTime> SelectDateEvent { get; set; }
+
+    public DateTime SelectDate { get; set; } = DateTime.Now;
+
     private int FirstDay { get { return (int)new DateTime(Year, Month, 1).DayOfWeek; } }
 
-    private int TotalDay { get { return (int)new DateTime(Year, Month, 1).Day; } }
+    private int PreLastDay { get { return DateTime.DaysInMonth(PreDate.Year, PreDate.Month); } }
+
+    private int NextFirstDay { get; set; } = 1;
+
+    private int TotalDay { get { return DateTime.DaysInMonth(Year, Month); } }
+
+    private int ChoseDay { get; set; } = DateTime.Now.Day;
 
     private string[] THead = { "日", "一", "二", "三", "四", "五", "六" };
 
     private void PlusMonth()
     {
         ShowDate = ShowDate.AddMonths(1);
+        PreDate = PreDate.AddMonths(1);
         Year = ShowDate.Year;
         Month = ShowDate.Month;
+        NextFirstDay = 1;
         StateHasChanged();
     }
 
     private void MinMonth()
     {
         ShowDate = ShowDate.AddMonths(-1);
+        PreDate = PreDate.AddMonths(-1);
         Year = ShowDate.Year;
         Month = ShowDate.Month;
+        NextFirstDay = 1;
         StateHasChanged();
     }
 
+    protected async Task ChoseDateEvent(int day)
+    {
+        ChoseDay = day;
+        NextFirstDay = 1;
+        SelectDate = new DateTime(Year, Month, day);
+        await SelectDateEvent.InvokeAsync(SelectDate);
+    }
 }

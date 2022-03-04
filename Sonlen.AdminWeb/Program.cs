@@ -18,5 +18,6 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IPunchService, PunchService>();
+builder.Services.AddScoped<ILeaveService, LeaveService>();
 
 await builder.Build().RunAsync();

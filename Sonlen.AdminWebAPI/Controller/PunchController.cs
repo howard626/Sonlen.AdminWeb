@@ -8,11 +8,11 @@ namespace Sonlen.AdminWebAPI.Controller
     [ApiController]
     public class PunchController : ControllerBase
     {
-        private readonly IPunchService _punchServiceService;
+        private readonly IPunchService _punchService;
 
-        public PunchController(IPunchService punchServiceService)
+        public PunchController(IPunchService punchService)
         {
-            _punchServiceService = punchServiceService;
+            _punchService = punchService;
         }
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("In")]
         public ActionResult<string> PunchIn([FromBody] Employee employee)
         {
-            int result = _punchServiceService.PunchIn(employee);
+            int result = _punchService.PunchIn(employee);
             if (result > 0)
                 return Ok("打卡成功");
             else if (result == -1)
@@ -40,7 +40,7 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("Out")]
         public ActionResult<string> PunchOut([FromBody] Employee employee)
         {
-            int result = _punchServiceService.PunchOut(employee);
+            int result = _punchService.PunchOut(employee);
             if (result > 0)
                 return Ok("打卡成功");
             else if (result == -1)

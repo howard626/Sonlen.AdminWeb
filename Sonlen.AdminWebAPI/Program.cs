@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Sonlen.AdminWebAPI.Data;
+using Sonlen.AdminWebAPI.Extensions;
 using Sonlen.AdminWebAPI.Service;
 using System.Text;
 
@@ -54,6 +55,8 @@ builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IEmployeeDapperService, EmployeeDapperService>();
 builder.Services.AddScoped<IPunchService, PunchService>();
+builder.Services.AddScoped<ILeaveService, LeaveService>();
+builder.Services.AddScoped<IFileService, FileService>();
 
 #endregion
 
@@ -75,17 +78,15 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseCors(MyAllowSpecificOrigins);
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapRazorPages();
     endpoints.MapControllers();
     endpoints.MapFallbackToFile("index.html");
 });
-
+app.ConfigureExceptionHandler(app.Logger);
 app.Run();
 
 #endregion

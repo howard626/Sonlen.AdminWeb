@@ -18,11 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Shared\" />
+    <ProjectReference Include="..\Sonlen.WebAdmin.Model\Sonlen.WebAdmin.Model.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sonlen.WebAdmin.Model\Sonlen.WebAdmin.Model.csproj" />
+    <Folder Include="Shared\" />
   </ItemGroup>
 
 </Project>
