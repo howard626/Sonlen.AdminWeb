@@ -1,0 +1,149 @@
+﻿@page "/ConfirmLeave"
+
+@inject ILeaveService leaveService
+@inject IJSRuntime JS
+@attribute [Authorize(Roles = "admin")]
+
+<div class="card">
+    <div class="card-header border-0">
+
+        <h3 class="card-title">
+            <i class="far fa-clock"></i>
+            請假紀錄
+        </h3>
+    </div>
+    <!-- /.card-header -->
+    <div class="card-body pt-0">
+        <!--The calendar -->
+        @if (leaveRecords.Count != 0)
+        {
+            <GridAutoComponent SelectRowEvent="SelectRow" 
+                            Items="leaveRecords"
+                            ColumnsToExcludeCSV="LeaveType, Accept, LeaveStartTime, LeaveEndTime, LeaveDate"
+                            CssClass="table-hover text-nowrap"
+                            Row="5"
+                            ColumnToLink="Prove"
+                            Link="LeaveProve"></GridAutoComponent>
+        }
+    </div>
+    <!-- /.card-body -->
+</div>
+
+<button class="btn btn-success" @onclick="AgreeLeave" disabled="@IsLoading">同意</button>
+<button class="btn btn-danger" @onclick="DisagreeLeave" disabled="@IsLoading">駁回</button>
+
+<ConfirmComponent @ref="Confirmation" ConfirmationChanged="ConfirmClick"
+         ConfirmationTitle=@("審核確認")
+         ConfirmationMessage=@(ConfirmMessage)>
+</ConfirmComponent>
+
+
+@code {
+    //可請假的類別
+    private List<LeaveType> leaveTypes { get; set; } = new List<LeaveType>();
+
+    //登入人員曾經的請假紀錄
+    private List<LeaveRecordViewModel> leaveRecords = new List<LeaveRecordViewModel>();
+
+    //選擇的請假紀錄
+    private LeaveRecordViewModel? SelectItem;
+
+    // CONFIRM 視窗
+    protected ConfirmComponent? Confirmation { get; set; }
+
+    // CONFIRM 視窗訊息
+    private string ConfirmMessage { get; set; } = string.Empty;
+
+    //是否在讀取資料
+    private bool IsLoading { get; set; } = false;
+
+    //審核結果 (1=同意, -1=駁回)
+    private int Check_Result { get; set; } = 0;
+
+    //同意請假
+    protected async void AgreeLeave()
+    {
+        if (SelectItem != null)
+        {
+            Check_Result = 1;
+            ConfirmMessage = $"請確定是否要同意{SelectItem.EmployeeName}於{SelectItem.LeaveDateDesc}請的{SelectItem.LeaveDesc}";
+            Confirmation?.Show();
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "請選擇要審核的資料");
+        }
+    }
+
+    //駁回請假
+    protected async void DisagreeLeave()
+    {
+        if (SelectItem != null)
+        {
+            Check_Result = -1;
+            ConfirmMessage = $"請確定是否要駁回{SelectItem.EmployeeName}於{SelectItem.LeaveDateDesc}請的{SelectItem.LeaveDesc}";
+            Confirmation?.Show();
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "請選擇要審核的資料");
+        }
+    }
+
+    //初始化各值
+    protected override async Task OnInitializedAsync()
+    {
+        leaveTypes = await leaveService.GetLeaveTypesAsync() ?? new List<LeaveType>();
+        GetAllLeaveRecordAsync();
+    }
+
+    private async void GetAllLeaveRecordAsync()
+    {
+        leaveRecords = await leaveService.GetAllLeaveRecordAsync() ?? new List<LeaveRecordViewModel>();
+
+        if (leaveRecords.Count > 0 && leaveTypes.Count > 0)
+        {
+            leaveRecords.Init(leaveTypes);
+        }
+        StateHasChanged();
+    }
+
+    //設定選擇的請假紀錄
+    protected void SelectRow(string json)
+    {
+        SelectItem = Newtonsoft.Json.JsonConvert.DeserializeObject<LeaveRecordViewModel>(json);
+    }
+
+    //確定審核結果
+    protected async Task ConfirmClick(bool confirmed)
+    {
+        if (confirmed)
+        {
+            if (Check_Result == 1)
+            {
+                if (SelectItem != null)
+                {
+                    await leaveService.AgreeLeaveRecordAsync(SelectItem);
+                    GetAllLeaveRecordAsync();
+                }
+                else
+                {
+                    await JS.InvokeVoidAsync("alert", "請選擇要審核的資料");
+                }
+            }
+            else if (Check_Result == -1)
+            {
+                if (SelectItem != null)
+                {
+                    await leaveService.DisagreeLeaveRecordAsync(SelectItem);
+                    GetAllLeaveRecordAsync();
+                }
+                else
+                {
+                    await JS.InvokeVoidAsync("alert", "請選擇要審核的資料");
+                }
+            }
+        }
+    }
+}
+

@@ -40,7 +40,7 @@ namespace Sonlen.WebAdmin.Model.Utility
             public object? Value { get; set; }
         }
 
-        public static DynamicParameters ToDynamicParameters(this object obj, SqlParameter[] additionalParams = null)
+        public static DynamicParameters ToDynamicParameters(this object obj, SqlParameter[]? additionalParams = null)
         {
             DynamicParameters parameters = new DynamicParameters();
             var props = (
@@ -231,7 +231,7 @@ namespace Sonlen.WebAdmin.Model.Utility
 
         private static DbTypeMapEntry Find(Type type)
         {
-            object retObj = null;
+            object? retObj = null;
             for (int i = 0; i < _DbTypeList.Count; i++)
             {
                 DbTypeMapEntry entry = (DbTypeMapEntry)_DbTypeList[i];
@@ -252,7 +252,7 @@ namespace Sonlen.WebAdmin.Model.Utility
 
         private static DbTypeMapEntry Find(DbType dbType)
         {
-            object retObj = null;
+            object? retObj = null;
             for (int i = 0; i < _DbTypeList.Count; i++)
             {
                 DbTypeMapEntry entry = (DbTypeMapEntry)_DbTypeList[i];
@@ -273,7 +273,7 @@ namespace Sonlen.WebAdmin.Model.Utility
 
         private static DbTypeMapEntry Find(SqlDbType sqlDbType)
         {
-            object retObj = null;
+            object? retObj = null;
             for (int i = 0; i < _DbTypeList.Count; i++)
             {
                 DbTypeMapEntry entry = (DbTypeMapEntry)_DbTypeList[i];

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Sonlen.WebAdmin.Model;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -52,7 +53,7 @@ namespace Sonlen.AdminWebAPI.Service
                 requestStream.Write(buffer, 0, buffer.Length);
                 requestStream.Flush();
                 requestStream.Close();
-            }   
+            }
         }
 
         /// <summary>
@@ -60,13 +61,24 @@ namespace Sonlen.AdminWebAPI.Service
         /// </summary>
         /// <param name="buffer"></param>
         /// <param name="fileName"></param>
-        /// <param name="ext"></param>
-        public void UploadFile(byte[] buffer, string fileName, string ext)
+        public void UploadFile(byte[] buffer, string fileName)
         {
-            var path = $"{Root}\\{fileName}.{ext}";
+            var path = $"{Root}\\{fileName}";
             var fs = File.Create(path);
             fs.Write(buffer, 0, buffer.Length);
             fs.Close();
+        }
+
+        public UploadFile DownloadFile(string fileName)
+        {
+            UploadFile uploadFile = new UploadFile();
+            var path = $"{Root}\\{fileName}";
+            byte[] byteArray = File.ReadAllBytes(path);
+
+            uploadFile.FileContent = byteArray;
+            uploadFile.FileName = fileName;
+
+            return uploadFile;
         }
     }
 }

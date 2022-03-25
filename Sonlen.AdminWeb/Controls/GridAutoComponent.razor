@@ -1,18 +1,40 @@
 ﻿@typeparam TItem
 @using System.Reflection
+@using System.ComponentModel.DataAnnotations
+
+<style>
+    .auto-gridr td ,th {
+        text-align: center;
+    }
+    
+    .auto-grid tr.active{
+        background-color: yellow;
+    }
+ </style>
+
 
 @if (propertyInfo != null && propertyInfo.Length > 0)
 {
-    <table class="@($"table {CssClass}")">
+    <table class="@($"table {CssClass} auto-grid")">
         <thead>
             <tr>
                 @foreach (var property in propertyInfo)
                 {
                     @if (!ColumnsToExcludeCSV.Contains(property.Name))
                     {
-                        <th>
-                            @property.Name
-                        </th>
+                        DisplayAttribute? displayAttribute = property.GetCustomAttribute<DisplayAttribute>();
+                        if (displayAttribute != null && !string.IsNullOrWhiteSpace(displayAttribute.Description))
+                        {
+                            <th>
+                                @displayAttribute.Description
+                            </th>
+                        }
+                        else
+                        {
+                            <th>
+                                @property.Name
+                            </th>
+                        }
                     }
                 }
             </tr>
@@ -21,7 +43,7 @@
             @for(int i = (Page - 1) * Row; i <  TotalData; i++)
             {
                 var item = Items[i];
-                <tr>
+                <tr @onclick="() => ChoseRowEvent(item)" class="@(item.Equals(Item) ? "active" : "")">
                     @foreach (var property in propertyInfo)
                     {
                         @if (!ColumnsToExcludeCSV.Contains(property.Name))
@@ -34,10 +56,15 @@
                             }
                             else
                             {
+                                Type type = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+                                string typeName = type.Name;
                                 <td>
-                                    @if (property.PropertyType.Name.Equals("Nullable`1"))
+                                    @if (typeName.Equals("DateTime"))
                                     {
-                                        @property.GetValue(item)?.ToString()?.Split(' ')[0]
+                                        if (property.GetValue(item) != null)
+                                        {
+                                            @(((DateTime)property.GetValue(item)).ToString("yyyy/MM/dd"))
+                                        }
                                     }
                                     else
                                     {
@@ -71,6 +98,7 @@
 
     PropertyInfo[]? propertyInfo;
 
+    //初始化各值
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
@@ -89,6 +117,7 @@
         }
     }
 
+    //下一頁
     private void NextPage()
     {
         Page++;
@@ -98,6 +127,7 @@
         StateHasChanged();
     }
 
+    //前一頁
     private void PrePage()
     {
         Page--;
@@ -107,32 +137,66 @@
         StateHasChanged();
     }
 
+    //選取表格內欄位的事件
+    protected async Task ChoseRowEvent(TItem item)
+    {
+        if (item.Equals(Item))
+        {
+            Item = default(TItem);
+            var json = string.Empty;
+            await SelectRowEvent.InvokeAsync(json);
+        }
+        else
+        {
+            Item = item;
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(Item);
+            await SelectRowEvent.InvokeAsync(json);
+        }
+    }
+
+    //選取表格內欄位的事件 回傳被選擇的欄位
+    [Parameter]
+    public EventCallback<string> SelectRowEvent { get; set; }
+
+    //要輸出表格的資料
     [Parameter]
     public List<TItem> Items { get; set; } = new List<TItem>();
 
+    private TItem? Item;
+
+    //不要顯示的欄位
     [Parameter]
     public string ColumnsToExcludeCSV { get; set; } = string.Empty;
 
+    //TABLE 的 CSS
     [Parameter]
     public string CssClass { get; set; } = string.Empty;
 
+    //要有超連結的欄位
     [Parameter]
     public string ColumnToLink { get; set; } = string.Empty;
 
+    //超連結的網址
     [Parameter]
     public string Link { get; set; } = string.Empty;
 
+    //現在的頁數
     [Parameter]
     public int Page { get; set; } = 1;
 
+    //每頁要顯示的資料數量
     [Parameter]
     public int Row { get; set; } = 10;
 
+    //總共有多少筆資料
     private int TotalData { get; set; }
 
+    //總共有多少頁
     private int TotalPage{ get; set; }
 
+    //是不是第一頁
     private bool IsFirstPage { get; set; }
 
+    //是不是最後一頁
     private bool IsFinalPage { get; set; }
 }

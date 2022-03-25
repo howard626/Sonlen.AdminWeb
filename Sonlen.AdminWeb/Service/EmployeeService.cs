@@ -89,5 +89,37 @@ namespace Sonlen.AdminWeb.Service
 
             return result;
         }
+
+        /** 取得員工通知*/
+        public async Task<List<Notice>> GetEmployeeNoticeAsync(Employee employee)
+        {
+            List<Notice>? notices = null;
+
+            var json = JsonConvert.SerializeObject(employee);
+            HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync($"{API_ADDRESS}GeNoticeByEID", httpContent);
+            var resContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                notices = JsonConvert.DeserializeObject<List<Notice>>(resContent);
+            }
+
+            return notices ?? new List<Notice>();
+        }
+
+        /** 設定通知為已讀*/
+        public async Task<string> SetNoticeToIsReadAsync(List<Notice> notices)
+        {
+            var json = JsonConvert.SerializeObject(notices);
+            HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync($"{API_ADDRESS}SetNoticeToIsRead", httpContent);
+            var resContent = await response.Content.ReadAsStringAsync();
+
+            return resContent;
+        }
+        
     }
 }

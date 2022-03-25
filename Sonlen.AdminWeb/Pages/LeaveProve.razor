@@ -1,0 +1,30 @@
+﻿@page "/LeaveProve/{FileName}"
+
+@inject ILeaveService leaveService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>LeaveProve</h3>
+
+@code {
+    [Parameter]
+    public string FileName { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        UploadFile file = await leaveService.GetLeaveProveAsync(FileName);
+        string ext = Path.GetExtension(FileName);
+
+        var fileStream = new MemoryStream(file.FileContent ?? new byte[0]);
+        using var streamRef = new DotNetStreamReference(stream: fileStream);
+
+        await JS.InvokeVoidAsync("downloadFileFromStream", FileName, streamRef);
+
+    }
+
+    protected override void OnInitialized()
+    {
+        // 返回上一頁
+        JS.InvokeVoidAsync("history.back");
+    }
+}

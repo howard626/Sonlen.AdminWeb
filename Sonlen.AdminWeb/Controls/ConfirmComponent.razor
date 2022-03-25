@@ -14,13 +14,16 @@
                     @ConfirmationMessage
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                        @onclick="() => OnConfirmationChange(false)">
-                        取消
-                    </button>
+                    @if (ShowCancel)
+                    {
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            @onclick="() => OnConfirmationChange(false)">
+                            @CancelBtn
+                        </button>
+                    }
                     <button type="button" class="btn btn-success"
                         @onclick="() => OnConfirmationChange(true)">
-                        確認
+                        @ConfirmBtn
                     </button>
                 </div>
             </div>
@@ -29,7 +32,9 @@
 }
 
 @code {
-    protected bool ShowConfirmation { get; set; }
+    protected bool ShowConfirmation { get; set; } = false;
+
+    protected bool ShowCancel { get; set; } = true;
 
     [Parameter]
     public string ConfirmationTitle { get; set; } = "Confirm Delete";
@@ -37,10 +42,22 @@
     [Parameter]
     public string ConfirmationMessage { get; set; } = "Are you sure you want to delete";
 
+    [Parameter]
+    public string CancelBtn { get; set; } = "取消";
+
+    [Parameter]
+    public string ConfirmBtn { get; set; } = "確認";
+
     public void Show()
     {
         ShowConfirmation = true;
         StateHasChanged();
+    }
+
+    public void Alert()
+    {
+        ShowCancel = false;
+        Show();
     }
 
     [Parameter]
@@ -49,6 +66,7 @@
     protected async Task OnConfirmationChange(bool value)
     {
         ShowConfirmation = false;
+        ShowCancel = true;
         await ConfirmationChanged.InvokeAsync(value);
     }
 }

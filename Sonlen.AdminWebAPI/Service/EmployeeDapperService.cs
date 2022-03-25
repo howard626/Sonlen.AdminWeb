@@ -21,6 +21,7 @@ namespace Sonlen.AdminWebAPI.Service
             get { return new SqlConnection(connectString); }
         }
 
+        /** 新增員工*/
         public int AddEmployee(Employee employee)
         {
             int result;
@@ -49,6 +50,7 @@ namespace Sonlen.AdminWebAPI.Service
             return result;
         }
 
+        /** 更新員工資料*/
         public int UpdateEmployee(Employee employee)
         {
             int result;
@@ -77,6 +79,7 @@ namespace Sonlen.AdminWebAPI.Service
             return result;
         }
 
+        /** 刪除員工*/
         public int DeleteEmployee(Employee employee)
         {
             int result;
@@ -91,6 +94,7 @@ namespace Sonlen.AdminWebAPI.Service
             return result;
         }
 
+        /** 取得全部員工資料*/
         public IEnumerable<Employee> GetAllEmployees()
         {
             IEnumerable<Employee> employee;
@@ -101,6 +105,7 @@ namespace Sonlen.AdminWebAPI.Service
             return employee;
         }
 
+        /** 以 身分證字號 取得員工資料*/
         public Employee GetEmployeeById(string id)
         {
             Employee employee = new Employee();
@@ -114,6 +119,7 @@ namespace Sonlen.AdminWebAPI.Service
             return employee;
         }
 
+        /** 以 email 取得員工資料*/
         public Employee GetEmployeeByEmail(string email)
         {
             Employee employee = new Employee();
@@ -127,6 +133,7 @@ namespace Sonlen.AdminWebAPI.Service
             return employee;
         }
 
+        /** 檢查是否已存在此 email*/
         public bool CheckEmail(string email, string id)
         {
             Employee? employee;
@@ -139,6 +146,38 @@ namespace Sonlen.AdminWebAPI.Service
                 employee = conn.QueryFirstOrDefault<Employee>("CheckEmployeeEmail", parameters, commandType: CommandType.StoredProcedure);
             }
             return employee == null;
+        }
+
+        /** 取得員工通知*/
+        public IEnumerable<Notice> GeNoticeByEID(Employee employee)
+        {
+            IEnumerable<Notice> notices;
+            using (var conn = new SqlConnection(connectString))
+            {
+                DynamicParameters parameters = new DynamicParameters();
+                parameters.Add("@EmployeeID", employee.EmployeeID, DbType.String);
+                notices = conn.Query<Notice>("GetNoticeByEID", parameters, commandType: CommandType.StoredProcedure);
+            }
+            return notices;
+        }
+
+        /** 設定通知為已讀*/
+        public int SetNoticeToIsRead(List<Notice> notices)
+        {
+            int result = 0;
+
+            using (var conn = new SqlConnection(connectString))
+            {
+                foreach (Notice notice in notices)
+                {
+                    DynamicParameters parameters = new DynamicParameters();
+                    parameters.Add("@Id", notice.Id, DbType.Int32);
+                    parameters.Add("@IsRead", 1, DbType.Int32);
+                    result += conn.Execute("UpdNotice", parameters, commandType: CommandType.StoredProcedure);
+                }
+            }
+
+            return result;
         }
     }
 }

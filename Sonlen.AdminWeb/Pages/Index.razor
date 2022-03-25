@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject ILoginService loginService
+@inject IEmployeeService employeeService
 @attribute [Authorize]
 
 <PageTitle>Index</PageTitle>
@@ -17,11 +18,6 @@ Welcome to your new app.
     </p>
 
     <ul>
-        <li>roles:</li>
-        @foreach (var role in authState.User.Claims.Where(c => c.Type == "role"))
-        {
-            <li>@role.Value</li>
-        }
         <li>all:</li>
         @foreach (var role in authState.User.Claims)
         {
@@ -29,14 +25,13 @@ Welcome to your new app.
         }
     </ul>
 }
-@if (employees.Count != 0)
-{
-    <GridAutoComponent Items="employees"
-                       ColumnsToExcludeCSV="LoginKey"
-                       CssClass="table-hover text-nowrap"
-                       Row="5"></GridAutoComponent>
-}
 
+<ConfirmComponent @ref="NoticeConfirmation" ConfirmationChanged="NoticeConfirmClick"
+         ConfirmationTitle=@("您的通知")
+         ConfirmationMessage=@(notice)
+         CancelBtn=@("稍後通知")
+         ConfirmBtn=@("全部已讀")>
+    </ConfirmComponent>
 @code{
     [CascadingParameter]
     private Task<AuthenticationState> _authState { get; set; }
@@ -45,12 +40,43 @@ Welcome to your new app.
 
     private List<Employee> employees = new List<Employee>();
 
+    private List<Notice> notices = new List<Notice>();
+
+    private string notice { get; set; } = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
         authState = await _authState;
         if (authState != null)
         {
             employees = await loginService.GetAllEmployeeAsync() ?? new List<Employee>();
+            notices = await employeeService.GetEmployeeNoticeAsync(new Employee() { EmployeeID = authState.User.Claims.FirstOrDefault(c => c.Type == "EmployeeID")?.Value ?? string.Empty}) ?? new List<Notice>();
+            foreach (var item in notices.Select((notice, index) => (notice, index)))
+            {
+                notice += $"{item.index + 1}-{item.notice.Content}\r\n";
+            }
+            if (!string.IsNullOrEmpty(notice))
+            {
+                NoticeShow();
+            }
+        }
+    }
+
+    // CONFIRM 視窗
+    protected ConfirmComponent? NoticeConfirmation { get; set; }
+
+    //請假按鈕事件
+    protected void NoticeShow()
+    {
+        NoticeConfirmation?.Show();
+    }
+
+    //確定請假
+    protected async Task NoticeConfirmClick(bool confirmed)
+    {
+        if (confirmed)
+        {
+            string result = await employeeService.SetNoticeToIsReadAsync(notices);
         }
     }
     

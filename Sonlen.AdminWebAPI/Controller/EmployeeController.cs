@@ -89,5 +89,31 @@ namespace Sonlen.AdminWebAPI.Controller
         {
             return Ok(_employeeDapperService.GetAllEmployees());   
         }
+
+        /// <summary>
+        /// 取得員工通知
+        /// </summary>
+        /// <param name="employee"></param>
+        /// <returns></returns>
+        [HttpPost("GeNoticeByEID")]
+        public ActionResult<string> GeNoticeByEID([FromBody] Employee employee)
+        {
+            return Ok(_employeeDapperService.GeNoticeByEID(employee));
+        }
+
+        /// <summary>
+        /// 設定通知為已讀
+        /// </summary>
+        /// <param name="notices"></param>
+        /// <returns></returns>
+        [HttpPost("SetNoticeToIsRead")]
+        public ActionResult<string> SetNoticeToIsRead([FromBody] List<Notice> notices)
+        {
+            int result = _employeeDapperService.SetNoticeToIsRead(notices);
+            if (result > 0)
+                return Ok("已將通知標誌為已讀");
+            else
+                return BadRequest("通知標誌已讀失敗");
+        }
     }
 }

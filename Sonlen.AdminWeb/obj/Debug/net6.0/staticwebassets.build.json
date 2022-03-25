@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "4DjHXMkLIcjDm0QVjrUtUQ/GEDf+Ooh3r98rEcppkCQ=",
+  "Hash": "60jHiYmufbQZ75Vy790eiQ0Evzzm3TSR6kaOVFkAKvo=",
   "Source": "Sonlen.AdminWeb",
   "BasePath": "/",
   "Mode": "Root",
@@ -9093,6 +9093,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\sample-data\\weather.json"
+    },
+    {
+      "Identity": "C:\\Users\\USER\\source\\repos\\Sonlen.AdminWeb\\Sonlen.AdminWeb\\wwwroot\\scripts\\DownloadFileScript.js",
+      "SourceId": "Sonlen.AdminWeb",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\USER\\source\\repos\\Sonlen.AdminWeb\\Sonlen.AdminWeb\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "scripts/DownloadFileScript.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\scripts\\DownloadFileScript.js"
     }
   ]
 }

@@ -1,5 +1,5 @@
 ﻿@page "/Leave"
-@using Sonlen.AdminWeb.Controls
+
 @inject ILeaveService leaveService
 @inject IJSRuntime JS
 @attribute [Authorize]
@@ -11,60 +11,91 @@
 
 <br />
 <p>
-    請假類別： 
+    請假類別：
     <select @bind="model.LeaveType">
         @foreach (var leaveType in leaveTypes)
         {
-            <option value="@leaveType.Id">@leaveType.LeaveName ( @leaveType.LeaveDesc )</option>
+            if (string.IsNullOrEmpty(@leaveType.LeaveDesc))
+            {
+                <option value="@leaveType.Id">@leaveType.LeaveName </option>
+            }
+            else
+            {
+                <option value="@leaveType.Id">@leaveType.LeaveName ( @leaveType.LeaveDesc )</option>
+            }
         }
     </select>
 </p>
-請假時間： <input type="text" @bind-value="@model.LeaveStartTime" @bind-value:event="oninput" /> ~
-           <input type="text" @bind-value="@model.LeaveEndTime" @bind-value:event="oninput" />
+請假時間：
+<input type="text" @bind-value="@model.LeaveStartTime" @bind-value:event="oninput" placeholder="0900" /> ~
+<input type="text" @bind-value="@model.LeaveEndTime" @bind-value:event="oninput" placeholder="1800" />
 請假佐證： <InputFile OnChange="@OnInputFileChange"></InputFile>
 <br />
-<button class="btn btn-danger" @onclick="LeaveClick">請假</button>
+<button class="btn btn-success" @onclick="LeaveClick" disabled="@IsLoading">請假</button>
 <ConfirmComponent @ref="LeaveConfirmation" ConfirmationChanged="LeaveConfirmClick"
-         ConfirmationTitle=@("請假確認")
-         ConfirmationMessage=@($"您確定要在 {model.LeaveDate.ToTWDateString()} 這天請假嗎？")>
+                  ConfirmationTitle=@(ConfirmTitle)
+                  ConfirmationMessage=@(ConfirmMessage)>
 </ConfirmComponent>
 
 @if (leaveRecords.Count != 0)
 {
     <div class="card">
-    <div class="card-header border-0">
+        <div class="card-header border-0">
 
-        <h3 class="card-title">
-            <i class="far fa-clock"></i>
-            請假紀錄
-        </h3>
-    </div>
-    <!-- /.card-header -->
+            <h3 class="card-title">
+                <i class="far fa-clock"></i>
+                請假紀錄
+            </h3>
+        </div>
+        <!-- /.card-header -->
     <div class="card-body pt-0">
-        <!--The calendar -->
-        <GridAutoComponent Items="leaveRecords"
-                            ColumnsToExcludeCSV="LeaveType, Accept, LeaveStartTime, LeaveEndTime"
-                            CssClass="table-hover text-nowrap"
-                            Row="5"></GridAutoComponent>
-    </div>
-    <!-- /.card-body -->
+            <!--The calendar -->
+        <GridAutoComponent SelectRowEvent="SelectRow"
+                           Items="leaveRecords"
+                           ColumnsToExcludeCSV="LeaveType, Accept, LeaveStartTime, LeaveEndTime, LeaveDate, EmployeeID, EmployeeName"
+                           CssClass="table-hover text-nowrap"
+                           Row="5"
+                           ColumnToLink="Prove"
+                           Link="LeaveProve"></GridAutoComponent>
+        </div>
+        <!-- /.card-body -->
 </div>
-    
+
+    <button class="btn btn-danger" @onclick="CancelLeaveClick" disabled="@IsLoading">取消請假</button>
 }
 
 @code {
+    //瀏覽請假頁面的 MODEL
     private LeaveViewModel model { get; set; } = new LeaveViewModel();
 
-    public DateTime ShowDate { get; set; } = DateTime.Now;
-
-    private int LeaveType { get; set; }
-
+    //上傳的檔案
     private UploadFile uploadFile { get; set; } = new UploadFile();
 
+    //可請假的類別
     private List<LeaveType> leaveTypes { get; set; } = new List<LeaveType>();
 
+    //登入人員曾經的請假紀錄
     private List<LeaveRecordViewModel> leaveRecords = new List<LeaveRecordViewModel>();
 
+    //選擇的請假紀錄
+    private LeaveRecordViewModel? SelectItem;
+
+    //是否在讀取資料
+    private bool IsLoading { get; set; } = false;
+
+    // CONFIRM 視窗
+    protected ConfirmComponent? LeaveConfirmation { get; set; }
+
+    // CONFIRM 視窗標題
+    private string ConfirmTitle { get; set; } = string.Empty;
+
+    // CONFIRM 視窗訊息
+    private string ConfirmMessage { get; set; } = string.Empty;
+
+    // CONFIRM 項目
+    private int ConfirmType { get; set; } = 0;
+
+    //初始化各值
     protected override async Task OnInitializedAsync()
     {
         leaveTypes = await leaveService.GetLeaveTypesAsync() ?? new List<LeaveType>();
@@ -72,71 +103,139 @@
 
         if (leaveRecords.Count > 0 && leaveTypes.Count > 0)
         {
-            leaveRecords.ForEach(record => {
-                record.LeaveDesc = leaveTypes.FirstOrDefault(type => type.Id == record.LeaveType)?.LeaveName ?? string.Empty;
-                switch (record.Accept)
-                {
-                    case -1: record.AcceptDesc = "駁回"; break;
-                    case 0: record.AcceptDesc = "未審"; break;
-                    case 1: record.AcceptDesc = "同意"; break;
-                    default : record.AcceptDesc = "？？"; break;
-                }
-                record.LeaveDateDesc = $"{record.LeaveDate.ToTWDateString()} {record.LeaveStartTime} ~ {record.LeaveEndTime}";
-            });
+            leaveRecords.Init(leaveTypes);
         }
-
+        model.LeaveType = 1;
     }
 
+    //設定選擇的請假紀錄
+    protected void SelectRow(string json)
+    {
+        SelectItem = Newtonsoft.Json.JsonConvert.DeserializeObject<LeaveRecordViewModel>(json);
+    }
+
+    //設定選擇的請假日期
     protected void ChoseDate(DateTime selectDate)
     {
         model.LeaveDate = selectDate;
     }
 
-    protected ConfirmComponent? LeaveConfirmation { get; set; }
-
+    //請假按鈕事件
     protected void LeaveClick()
     {
+        ConfirmType = 1;
+        ConfirmTitle = "請假確認";
+        ConfirmMessage = $"您確定要在 {model.LeaveDate.ToTWDateString()} 這天請{leaveTypes.FirstOrDefault(l => l.Id == model.LeaveType)?.LeaveName ?? "假"}嗎？";
         LeaveConfirmation?.Show();
     }
 
-    protected async Task LeaveConfirmClick(bool confirmed)
+    //取消請假按鈕事件
+    protected void CancelLeaveClick()
     {
-        if (confirmed)
+        if (SelectItem != null)
         {
-            string result = await leaveService.LeaveOnAsync(model);
-            await JS.InvokeVoidAsync("alert", result);
-            leaveRecords = await leaveService.GetLeaveRecordByEIDAsync() ?? new List<LeaveRecordViewModel>();
-
-            if (leaveRecords.Count > 0 && leaveTypes.Count > 0)
+            if (SelectItem.Accept != 0)
             {
-                leaveRecords.ForEach(record => {
-                    record.LeaveDesc = leaveTypes.FirstOrDefault(type => type.Id == record.LeaveType)?.LeaveName ?? string.Empty;
-                    switch (record.Accept)
-                    {
-                        case -1: record.AcceptDesc = "駁回"; break;
-                        case 0: record.AcceptDesc = "未審"; break;
-                        case 1: record.AcceptDesc = "同意"; break;
-                        default : record.AcceptDesc = "？？"; break;
-                    }
-                    record.LeaveDateDesc = $"{record.LeaveDate.ToTWDateString()} {record.LeaveStartTime} ~ {record.LeaveEndTime}";
-                });
+                ConfirmType = -1;
+                ConfirmTitle = "取消請假";
+                ConfirmMessage = $"該請假已經被管理員審核，無法取消";
+                LeaveConfirmation?.Alert();
             }
+            else
+            {
+                ConfirmType = 2;
+                ConfirmTitle = "取消請假確認";
+                ConfirmMessage = $"您確定要取消在 {SelectItem.LeaveDate.ToTWDateString()} 這天請{leaveTypes.FirstOrDefault(l => l.Id == SelectItem.LeaveType)?.LeaveName ?? "假"}嗎？";
+                LeaveConfirmation?.Show();
+            }
+        }
+        else
+        {
+            ConfirmType = -1;
+            ConfirmTitle = "取消請假確認";
+            ConfirmMessage = $"請選擇要取消的資料";
+            LeaveConfirmation?.Alert();
         }
     }
 
+    //確定請假
+    protected async Task LeaveConfirmClick(bool confirmed)
+    {
+        switch (ConfirmType)
+        {
+            // 請假確認
+            case 1:
+                if (confirmed)
+                {
+                    if (string.IsNullOrEmpty(model.LeaveStartTime) || string.IsNullOrEmpty(model.LeaveEndTime))
+                    {
+                        ConfirmType = -1;
+                        ConfirmTitle = "請假確認";
+                        ConfirmMessage = $"請輸入請假時間起迄";
+                        LeaveConfirmation?.Alert();
+                        //await JS.InvokeVoidAsync("alert", "請輸入請假時間起迄");
+                    }
+                    else
+                    {
+                        string result = await leaveService.LeaveOnAsync(model);
+                        await JS.InvokeVoidAsync("alert", result);
+                        leaveRecords = await leaveService.GetLeaveRecordByEIDAsync() ?? new List<LeaveRecordViewModel>();
+
+                        if (leaveRecords.Count > 0 && leaveTypes.Count > 0)
+                        {
+                            leaveRecords.Init(leaveTypes);
+                        }
+                    }
+                }
+                break;
+            // 取消請假確認
+            case 2:
+                if (confirmed)
+                {
+                    if (SelectItem == null)
+                    {
+                        ConfirmType = -1;
+                        ConfirmTitle = "取消請假確認";
+                        ConfirmMessage = $"請選擇要取消的資料";
+                        LeaveConfirmation?.Alert();
+                    }
+                    else
+                    {
+                        string result = await leaveService.LeaveOffAsync(SelectItem);
+                        await JS.InvokeVoidAsync("alert", result);
+                        leaveRecords = await leaveService.GetLeaveRecordByEIDAsync() ?? new List<LeaveRecordViewModel>();
+
+                        if (leaveRecords.Count > 0 && leaveTypes.Count > 0)
+                        {
+                            leaveRecords.Init(leaveTypes);
+                        }
+                    }
+                }
+                break;
+            default: break;
+        }
+    }
+
+    //上傳檔案事件
     private async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
+        IsLoading = true;
+
         var file = e.File;
 
         var buffer = new byte[file.Size];
-        await file.OpenReadStream().ReadAsync(buffer);
+        await file.OpenReadStream(2048000).ReadAsync(buffer);
 
         UploadFile uploadFile = new UploadFile()
-        {
-            FileContent = buffer,
-            FileName = file.Name
-        };
+            {
+                FileContent = buffer,
+                FileName = file.Name
+            };
 
         model.File = uploadFile;
+
+        IsLoading = false;
     }
+
+
 }

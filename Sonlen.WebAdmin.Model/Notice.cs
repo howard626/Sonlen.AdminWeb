@@ -7,33 +7,33 @@ using System.Threading.Tasks;
 namespace Sonlen.WebAdmin.Model
 {
     /// <summary>
-    /// 請假類型
+    /// 通知
     /// </summary>
-    public class LeaveType
+    public class Notice
     {
         /// <summary>
-        /// 請假類型編號
+        /// 通知編號
         /// </summary>
         public int Id { get; set; }
 
         /// <summary>
-        /// 請假類型名稱
+        /// 通知內容
         /// </summary>
-        public string LeaveName { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
 
         /// <summary>
-        /// 請假類型說明
+        /// 通知員工編號
         /// </summary>
-        public string LeaveDesc { get; set; } = string.Empty;
+        public string EmployeeID { get; set; } = string.Empty;
 
         /// <summary>
-        /// 是否支付薪水(0:不支付 1:半薪 2:全薪)
+        /// 是否已讀
         /// </summary>
-        public int Pay { get; set; }
+        public int IsRead { get; set; }
 
         /// <summary>
-        /// 可請假總時數
+        /// 通知創建日期
         /// </summary>
-        public int? TotalHour { get; set; }
+        public DateTime CreateDate { get; set; } = DateTime.Now;
     }
 }

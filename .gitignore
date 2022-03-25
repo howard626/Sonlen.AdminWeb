@@ -1,0 +1,7 @@
+
+*.v2
+.vs/Sonlen.AdminWeb/v16/.suo
+*.v1
+.vs/Sonlen.AdminWeb/v17/.suo
+*.dll
+*.pdb

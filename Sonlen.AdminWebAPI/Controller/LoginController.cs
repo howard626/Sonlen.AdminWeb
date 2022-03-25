@@ -152,10 +152,13 @@ namespace Sonlen.AdminWebAPI.Controller
         private UserToken BuildToken(Employee employee)
         {
             //記在jwt payload中的聲明，可依專案需求自訂Claim
+            string role = "employee";
+            if (Setting.LEAVE_APPROVED_ID.Equals(employee.EmployeeID))
+                role = "admin";
             var claims = new List<Claim>()
             {
                 new Claim("Name", employee.EmployeeName),
-                new Claim("role", "employee"),
+                new Claim(ClaimTypes.Role, role),
                 new Claim("EmployeeID", employee.EmployeeID),
                 new Claim("Email", employee.Email)
             };
