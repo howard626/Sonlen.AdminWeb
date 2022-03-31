@@ -3,6 +3,7 @@ using Sonlen.WebAdmin.Model;
 using Sonlen.WebAdmin.Model.Utility;
 using System.Data;
 using System.Data.SqlClient;
+using System.Transactions;
 
 namespace Sonlen.AdminWebAPI.Service
 {
@@ -32,6 +33,7 @@ namespace Sonlen.AdminWebAPI.Service
             }
             else
             {
+                using (TransactionScope transactionScope = new TransactionScope())
                 using (var conn = Connection)
                 {
                     if (leave.Employee != null)
@@ -51,8 +53,20 @@ namespace Sonlen.AdminWebAPI.Service
                             int hour = leaveEndHour - leaveStartHour;
                             int min = leaveEndMin - leaveStartMin;
 
+                            parameters = new DynamicParameters();
+                            parameters.Add("@EmployeeID", Setting.LEAVE_APPROVED_ID, DbType.String);
+                            parameters.Add("@Content", $"{leave.Employee.EmployeeName} 於 {leave.LeaveDate:yyyy/MM/dd} {leave.LeaveStartTime} ~ {leave.LeaveEndTime} 請 {GetLeaveType(leave.LeaveType).LeaveName}，請去審核是否准許。", DbType.String);
+                            parameters.Add("@CreateDate", DateTime.Now, DbType.DateTime);
+                            parameters.Add("@NoticeId", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
+                            conn.Execute("InsNotice", parameters, commandType: CommandType.StoredProcedure);
+                            int noticeId = parameters.Get<int>("@NoticeId");
+                            if (noticeId < 0)
+                            {
+                                result = -99;//未知錯誤
+                                return result;
+                            }
                             //如果有包含13點，減去午休的一小時
-                            if (leaveEndHour >= 13 && leaveStartHour <= 13)
+                            if (leaveEndHour > 13 && leaveStartHour < 13)
                             {
                                 hour -= 1;
                             }
@@ -70,23 +84,20 @@ namespace Sonlen.AdminWebAPI.Service
                                 LeaveStartTime = $"{leave.LeaveStartTime.Substring(0, 2)}:{leave.LeaveStartTime.Substring(2, 2)}",
                                 LeaveEndTime = $"{leave.LeaveEndTime.Substring(0, 2)}:{leave.LeaveEndTime.Substring(2, 2)}",
                                 Accept = 0,
-                                LeaveHour = leaveHour
+                                LeaveHour = leaveHour,
+                                NoticeId = noticeId
                             };
                             if (leave.File != null)
                             {
                                 string ext = Path.GetExtension(leave.File.FileName);
-                                leave.File.FileName = $"{leave.Employee.EmployeeID}_{leave.LeaveDate.ToString("yyyyMMdd")}_{leave.LeaveType}{ext}";
+                                leave.File.FileName = $"{leave.Employee.EmployeeID}_{leave.LeaveDate:yyyyMMdd}_{leave.LeaveType}{ext}";
                                 _fileService.UploadFile(leave.File.FileContent ?? Array.Empty<byte>(), leave.File.FileName);
                                 leaveRecord.Prove = leave.File.FileName;
                             }
                             parameters = leaveRecord.ToDynamicParameters();
                             result = conn.Execute("LeaveOff", parameters, commandType: CommandType.StoredProcedure);
-
-                            parameters = new DynamicParameters();
-                            parameters.Add("@EmployeeID", Setting.LEAVE_APPROVED_ID, DbType.String);
-                            parameters.Add("@Content", $"{leave.Employee.EmployeeName} 於 {leave.LeaveDate.ToString("yyyy/MM/dd")} {leave.LeaveStartTime} ~ {leave.LeaveEndTime} 請 {GetLeaveType(leave.LeaveType).LeaveName}，請去審核是否准許。", DbType.String);
-                            parameters.Add("@CreateDate", DateTime.Now, DbType.DateTime);
-                            conn.Execute("InsNotice", parameters, commandType: CommandType.StoredProcedure);
+                            if(result > 0)
+                                transactionScope.Complete();
                         }
                         else
                         {

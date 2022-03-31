@@ -20,7 +20,7 @@
             <tr>
                 @foreach (var property in propertyInfo)
                 {
-                    @if (!ColumnsToExcludeCSV.Contains(property.Name))
+                    @if (ColumnsToShowArr.Contains(property.Name))
                     {
                         DisplayAttribute? displayAttribute = property.GetCustomAttribute<DisplayAttribute>();
                         if (displayAttribute != null && !string.IsNullOrWhiteSpace(displayAttribute.Description))
@@ -46,7 +46,7 @@
                 <tr @onclick="() => ChoseRowEvent(item)" class="@(item.Equals(Item) ? "active" : "")">
                     @foreach (var property in propertyInfo)
                     {
-                        @if (!ColumnsToExcludeCSV.Contains(property.Name))
+                        @if (ColumnsToShowArr.Contains(property.Name))
                         {
                             @if (property.Name.Equals(ColumnToLink))
                             {
@@ -114,6 +114,8 @@
             }
             IsFinalPage = Page == TotalPage;
             IsFirstPage = Page == 1;
+
+            ColumnsToShowArr = ColumnsToShow.Split(',');
         }
     }
 
@@ -164,9 +166,11 @@
 
     private TItem? Item;
 
-    //不要顯示的欄位
+    //要顯示的欄位
     [Parameter]
-    public string ColumnsToExcludeCSV { get; set; } = string.Empty;
+    public string ColumnsToShow { get; set; } = string.Empty;
+
+    private string[]? ColumnsToShowArr { get; set; } = null;
 
     //TABLE 的 CSS
     [Parameter]

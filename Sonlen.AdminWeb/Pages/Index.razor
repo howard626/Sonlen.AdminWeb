@@ -53,7 +53,7 @@ Welcome to your new app.
             notices = await employeeService.GetEmployeeNoticeAsync(new Employee() { EmployeeID = authState.User.Claims.FirstOrDefault(c => c.Type == "EmployeeID")?.Value ?? string.Empty}) ?? new List<Notice>();
             foreach (var item in notices.Select((notice, index) => (notice, index)))
             {
-                notice += $"{item.index + 1}-{item.notice.Content}\r\n";
+                notice += $"{item.index + 1}-{item.notice.Content}<br>";
             }
             if (!string.IsNullOrEmpty(notice))
             {

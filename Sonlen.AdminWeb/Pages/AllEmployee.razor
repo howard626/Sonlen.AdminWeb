@@ -8,7 +8,7 @@
 @if (employees.Count != 0)
 {
     <GridAutoComponent Items="employees"
-                       ColumnsToExcludeCSV="LoginKey,Sex,BankCode,BankAccountNO,Address"
+                       ColumnsToShow="EmployeeID,EmployeeName,ArrivalDate,Birthday,CellPhone"
                        CssClass=""
                        ColumnToLink="EmployeeID"
                        Link="Employee"></GridAutoComponent>

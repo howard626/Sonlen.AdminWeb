@@ -54,6 +54,11 @@ namespace Sonlen.WebAdmin.Model
         [Display(Description = "請假證明")]
         public string? Prove { get; set; }
 
+        /// <summary>
+        /// 通知編號
+        /// </summary>
+        public int NoticeId { get; set; }
+
     }
 
     /// <summary>
