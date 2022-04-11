@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Sonlen.AdminWebAPI.Data;
 using Sonlen.AdminWebAPI.Extensions;
+using Sonlen.AdminWebAPI.LogSetting;
 using Sonlen.AdminWebAPI.Service;
 using System.Text;
 
@@ -58,12 +59,17 @@ builder.Services.AddScoped<IPunchService, PunchService>();
 builder.Services.AddScoped<ILeaveService, LeaveService>();
 builder.Services.AddScoped<IFileService, FileService>();
 
+
 #endregion
 
 
 #region ConfigureApp
 
 var app = builder.Build();
+
+// api¨Ï¥Î°O¿ý
+new LoggerFactory().AddLog4Net("log4Net.xml");
+app.UseMiddleware<WebApiTrackerMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

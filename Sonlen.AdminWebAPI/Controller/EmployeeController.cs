@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Sonlen.AdminWebAPI.LogSetting;
 using Sonlen.AdminWebAPI.Service;
 using Sonlen.WebAdmin.Model;
 
@@ -28,9 +29,9 @@ namespace Sonlen.AdminWebAPI.Controller
             if (result > 0)
                 return Ok("新增員工成功");
             else if (result == -1)
-                return BadRequest("新增員工失敗：EmployeeID 已經存在");
+                return Ok("新增員工失敗：EmployeeID 已經存在");
             else if (result == -2)
-                return BadRequest("新增員工失敗：Email 已經存在");
+                return Ok("新增員工失敗：Email 已經存在");
             else
                 return BadRequest("新增員工失敗");
         }
@@ -48,9 +49,9 @@ namespace Sonlen.AdminWebAPI.Controller
             if (result > 0)
                 return Ok("更新員工成功");
             else if (result == -3)
-                return BadRequest("更新員工失敗：EmployeeID 不存在");
+                return Ok("更新員工失敗：EmployeeID 不存在");
             else if (result == -2)
-                return BadRequest("更新員工失敗：Email 已經存在");
+                return Ok("更新員工失敗：Email 已經存在");
             else
                 return BadRequest("更新員工失敗");
         }

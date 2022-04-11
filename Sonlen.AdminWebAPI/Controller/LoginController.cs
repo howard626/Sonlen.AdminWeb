@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Sonlen.AdminWebAPI.LogSetting;
 using Sonlen.AdminWebAPI.Service;
 using Sonlen.WebAdmin.Model;
 using Sonlen.WebAdmin.Model.Utility;
@@ -55,7 +56,7 @@ namespace Sonlen.AdminWebAPI.Controller
         /// <summary>
         /// 取得員工資料
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="employee"></param>
         /// <returns></returns>
         [HttpPost("GetEmployee")]
         public ActionResult<string> GetEmployeeById([FromBody] Employee employee)
@@ -67,7 +68,7 @@ namespace Sonlen.AdminWebAPI.Controller
         /// <summary>
         /// 取得全部員工資料
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="auth"></param>
         /// <returns></returns>
         [HttpPost("GetAllEmployees")]
         public ActionResult<string> GetAllEmployees(AuthModel<string> auth)

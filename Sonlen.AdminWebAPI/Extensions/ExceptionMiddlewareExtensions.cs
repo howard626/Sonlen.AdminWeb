@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
+using Sonlen.AdminWebAPI.LogSetting;
 using Sonlen.WebAdmin.Model;
 using System.Net;
 
@@ -17,7 +18,7 @@ namespace Sonlen.AdminWebAPI.Extensions
                     var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
                     if (contextFeature != null)
                     {
-                        logger.LogError($"Something went wrong: {contextFeature.Error}");
+                        LoggerHelper.Error($"Something went wrong: {contextFeature.Error}");
                         await context.Response.WriteAsync(new ErrorDetails()
                         {
                             StatusCode = context.Response.StatusCode,
