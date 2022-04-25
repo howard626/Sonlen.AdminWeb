@@ -1,0 +1,59 @@
+<log4net>
+	<!--錯誤日誌-->
+	<appender name="RollingLogFileAppender" type="log4net.Appender.RollingFileAppender">
+		<file value="log\\LogError\\"/>
+		<appendToFile value="true"/>
+		<rollingStyle value="Date"/>
+		<datePattern value="yyyy\\yyyyMM\\yyyyMMdd'.log'"/>
+		<staticLogFileName value="false"/>
+		<param name="MaxSizeRollBackups" value="100"/>
+		<layout type="log4net.Layout.PatternLayout">
+			<!--每條日誌末尾的文字說明-->
+			<!--輸出格式-->
+			<!--樣例：2008-03-26 13:42:32,111 [10] INFO  Log4NetDemo.MainClass [(null)] - info-->
+			<conversionPattern value="%newline %n記錄時間：%date %n線程ID:[%thread] %n日誌級別：  %-5level %n錯誤描述：%message%newline %n"/>
+		</layout>
+	</appender>
+	<!--Info日誌-->
+	<appender name="InfoAppender" type="log4net.Appender.RollingFileAppender">
+		<param name="File" value="Log\\LogInfo\\" />
+		<param name="AppendToFile" value="true" />
+		<param name="MaxFileSize" value="10240" />
+		<param name="MaxSizeRollBackups" value="100" />
+		<param name="StaticLogFileName" value="false" />
+		<param name="DatePattern" value="yyyy\\yyyyMM\\yyyyMMdd'.log'" />
+		<param name="RollingStyle" value="Date" />
+		<layout type="log4net.Layout.PatternLayout">
+			<conversionPattern value="%newline %n記錄時間：%date %n線程ID:[%thread] %n日誌級別：  %-5level %n日誌描述：%message%newline %n"/>
+		</layout>
+	</appender>
+
+	<!--監控日誌-->
+	<appender name="MonitorAppender" type="log4net.Appender.RollingFileAppender">
+		<param name="File" value="Log\\LogMonitor\\" />
+		<param name="AppendToFile" value="true" />
+		<param name="MaxFileSize" value="10240" />
+		<param name="MaxSizeRollBackups" value="100" />
+		<param name="StaticLogFileName" value="false" />
+		<param name="DatePattern" value="yyyy\\yyyyMM\\yyyyMMdd'.log'" />
+		<param name="RollingStyle" value="Date" />
+		<layout type="log4net.Layout.PatternLayout">
+			<conversionPattern value="%newline %n記錄時間：%date %n線程ID:[%thread] %n日誌級別：  %-5level %n跟蹤描述：%message%newline %n"/>
+		</layout>
+	</appender>
+	<!--Error日誌-->
+	<logger name="logerror">
+		<level value="ERROR" />
+		<appender-ref ref="RollingLogFileAppender" />
+	</logger>
+	<!--Info日誌-->
+	<logger name="loginfo">
+		<level value="INFO" />
+		<appender-ref ref="InfoAppender" />
+	</logger>
+	<!--監控日誌-->
+	<logger name="logmonitor">
+		<level value="Monitor" />
+		<appender-ref ref="MonitorAppender" />
+	</logger>
+</log4net>
