@@ -113,6 +113,7 @@ namespace Sonlen.AdminWebAPI.Service
             return result;
         }
 
+        /** 取消請假*/
         public int CancelDayOff(LeaveRecord leave)
         {
             int result;
@@ -196,7 +197,7 @@ namespace Sonlen.AdminWebAPI.Service
 
                 parameters = new DynamicParameters();
                 parameters.Add("@EmployeeID", employeeID, DbType.String);
-                parameters.Add("@Content", $"管理員已同意您於{leaveDate:yyy/MM/dd}的請假。", DbType.String);
+                parameters.Add("@Content", $"管理員已同意您於{leaveDate.ToTWDateString()}的請假。", DbType.String);
                 parameters.Add("@CreateDate", DateTime.Now, DbType.DateTime);
                 conn.Execute("InsNotice", parameters, commandType: CommandType.StoredProcedure);
             }
@@ -216,7 +217,7 @@ namespace Sonlen.AdminWebAPI.Service
 
                 parameters = new DynamicParameters();
                 parameters.Add("@EmployeeID", employeeID, DbType.String);
-                parameters.Add("@Content", $"管理員已駁回您於{leaveDate:yyy/MM/dd}的請假。", DbType.String);
+                parameters.Add("@Content", $"管理員已駁回您於{leaveDate.ToTWDateString()}的請假。", DbType.String);
                 parameters.Add("@CreateDate", DateTime.Now, DbType.DateTime);
                 conn.Execute("InsNotice", parameters, commandType: CommandType.StoredProcedure);
             }

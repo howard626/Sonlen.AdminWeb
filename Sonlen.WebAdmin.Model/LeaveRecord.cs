@@ -20,6 +20,7 @@ namespace Sonlen.WebAdmin.Model
         /// <summary>
         /// 請假日期
         /// </summary>
+        [Display(Description = "請假日期")]
         public DateTime LeaveDate { get; set; }
 
         /// <summary>
@@ -29,7 +30,7 @@ namespace Sonlen.WebAdmin.Model
 
         /// <summary>
         /// 請假時間(迄)
-        /// </summary>
+        /// </summary>        
         public string LeaveEndTime { get; set; } = string.Empty;
 
         /// <summary>
@@ -81,7 +82,7 @@ namespace Sonlen.WebAdmin.Model
         /// <summary>
         /// 請假日期說明
         /// </summary>
-        [Display(Description = "請假日期")]
+        [Display(Description = "請假日期時間")]
         public string LeaveDateDesc { get; set; } = string.Empty;
 
         /// <summary>

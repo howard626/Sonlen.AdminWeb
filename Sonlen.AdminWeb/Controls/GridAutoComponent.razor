@@ -3,36 +3,153 @@
 @using System.ComponentModel.DataAnnotations
 
 <style>
-    .auto-gridr td ,th {
+    .auto-gridr td, th {
+        cursor: pointer;
+    }
+
+    .auto-gridr td, th {
         text-align: center;
     }
-    
-    .auto-grid tr.active{
+
+    .auto-grid tr.active {
         background-color: yellow;
     }
- </style>
 
+    .arrow {
+        display: inline-block;
+        vertical-align: middle;
+        width: 0;
+        height: 0;
+        margin-left: 5px;
+        opacity: 0.66;
+    }
+
+        .arrow.desc {
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 4px solid #000;
+        }
+
+        .arrow.asc {
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 4px solid #000;
+        }
+
+    .hide {
+        display: none;
+    }
+</style>
 
 @if (propertyInfo != null && propertyInfo.Length > 0)
 {
+    @if (UseSearch)
+    {
+        @if (ShowSearch)
+        {
+            <div class="modal fade show d-block" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"> 查詢 </h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="() => CloseSearch()">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div>
+                                查詢類型：
+                                <select @bind="gridSearch.Mode">
+                                    <option value="AND">AND</option>
+                                    <option value="OR">OR</option>
+                                </select>
+                                <button type="button" class="btn btn-info" @onclick="() => AddSearch()">
+                                    新增
+                                </button>
+                            </div>
+                            <div>
+                                查詢欄位：
+                                @foreach (var context in gridSearch.Contexts)
+                                {
+                                    <div>
+                                        <select @bind-value:event="oninput" @bind-value="context.ColName" @onchange="CheckIsString">
+                                            @foreach (var property in propertyInfo)
+                                            {                                                
+                                                @if (ColumnsToSearchArr != null && ColumnsToSearchArr.Contains(property.Name))
+                                                {
+                                                    DisplayAttribute? displayAttribute = property.GetCustomAttribute<DisplayAttribute>();
+                                                    if (displayAttribute != null && !string.IsNullOrWhiteSpace(displayAttribute.Description))
+                                                    {
+                                                        <option value="@property.Name">@displayAttribute.Description</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@property.Name">@property.Name</option>
+                                                    }
+                                                }
+                                            }
+                                        </select>
+                                        <select @bind="context.Condition">
+                                            <option value="eq">等於</option>
+                                            <option class="@(context.IsString ? "hide" : "")" value="bt">大於等於</option>
+                                            <option class="@(context.IsString ? "hide" : "")" value="lt">小於等於</option>
+                                            <option class="@(context.IsString ? "" : "hide")" value="like">包含</option>
+                                            <option class="@(context.IsString ? "" : "hide")" value="nlike">不包含</option>
+                                            
+                                        </select>
+                                        <input type="text" @bind="@context.Context" @bind:event="oninput" />
+                                        <button type="button" class="btn btn-danger right" @onclick="() => RemoveSearch(context)">
+                                            刪除
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" @onclick="() => OnSearch()">
+                                查詢
+                            </button>
+                            <button type="button" class="btn btn-secondary" @onclick="() => ClearSearch()">
+                                清除
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        <div>
+            <button type="button" class="btn btn-primary" @onclick="() => OpenSearch()">
+                查詢
+            </button>
+        </div>
+    }
+
     <table class="@($"table {CssClass} auto-grid")">
         <thead>
             <tr>
                 @foreach (var property in propertyInfo)
                 {
-                    @if (ColumnsToShowArr.Contains(property.Name))
+                    @if (ColumnsToShowArr != null && ColumnsToShowArr.Contains(property.Name))
                     {
                         DisplayAttribute? displayAttribute = property.GetCustomAttribute<DisplayAttribute>();
                         if (displayAttribute != null && !string.IsNullOrWhiteSpace(displayAttribute.Description))
                         {
-                            <th>
+                            <th @onclick="() => OrderCol(property.Name)">
                                 @displayAttribute.Description
+                                @if (property.Name.Equals(OrderColName))
+                                {
+                                    <span class="@(OrderASC ? "arrow asc" : "arrow desc")"></span>
+                                }
                             </th>
                         }
                         else
                         {
-                            <th>
+                            <th @onclick="() => OrderCol(property.Name)">
                                 @property.Name
+                                @if (property.Name.Equals(OrderColName))
+                                {
+                                    <span class="@(OrderASC ? "arrow asc" : "arrow desc")"></span>
+                                }
                             </th>
                         }
                     }
@@ -40,13 +157,13 @@
             </tr>
         </thead>
         <tbody style="text-align:center">
-            @for(int i = (Page - 1) * Row; i <  TotalData; i++)
+            @for (int i = (Page - 1) * Row; i < TotalData; i++)
             {
                 var item = Items[i];
                 <tr @onclick="() => ChoseRowEvent(item)" class="@(item.Equals(Item) ? "active" : "")">
                     @foreach (var property in propertyInfo)
                     {
-                        @if (ColumnsToShowArr.Contains(property.Name))
+                        @if (ColumnsToShowArr != null && ColumnsToShowArr.Contains(property.Name))
                         {
                             @if (property.Name.Equals(ColumnToLink))
                             {
@@ -63,7 +180,7 @@
                                     {
                                         if (property.GetValue(item) != null)
                                         {
-                                            @(((DateTime)property.GetValue(item)).ToString("yyyy/MM/dd"))
+                                            @(((DateTime)property.GetValue(item)).ToTWDateString("yyy/MM/dd"))
                                         }
                                     }
                                     else
@@ -76,17 +193,17 @@
                     }
                 </tr>
             }
-            
+
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="@propertyInfo.Count()" title="Select Month" style="text-align:center"> 
-                    <button class="btn" disabled="@IsFirstPage">
-                        <span class="fa fa-chevron-left" title="Previous Page" @onclick="PrePage" ></span>
+                <td colspan="@propertyInfo.Count()" title="Select Month" style="text-align:center">
+                    <button class="btn" disabled="@IsFirstPage" @onclick="PrePage">
+                        <span class="fa fa-chevron-left" title="Previous Page" ></span>
                     </button>
-                    @(Page + "/" + TotalPage + "頁") 
-                    <button class="btn" disabled="@IsFinalPage">
-                        <span class="fa fa-chevron-right" title="Next Page" @onclick="NextPage"></span>
+                    @(Page + "/" + TotalPage + "頁")
+                    <button class="btn" disabled="@IsFinalPage" @onclick="NextPage">
+                        <span class="fa fa-chevron-right" title="Next Page" ></span>
                     </button>
                 </td>
             </tr>
@@ -95,8 +212,42 @@
 }
 
 @code {
-
+    //物件參數
     PropertyInfo[]? propertyInfo;
+
+    //選取表格內欄位的事件 回傳被選擇的欄位
+    [Parameter]
+    public EventCallback<string> SelectRowEvent { get; set; }
+
+    //要輸出表格的資料
+    [Parameter]
+    public List<TItem> Items { get; set; } = new List<TItem>();
+
+    //原本的資料
+    private List<TItem> ItemsTemp { get; set; } = new List<TItem>();
+
+    //被選取的資料
+    private TItem? Item;
+
+    //要顯示的欄位
+    [Parameter]
+    public string ColumnsToShow { get; set; } = string.Empty;
+
+    //要顯示的欄位陣列
+    private string[]? ColumnsToShowArr { get; set; } = null;
+
+    //TABLE 的 CSS
+    [Parameter]
+    public string CssClass { get; set; } = string.Empty;
+
+    //要有超連結的欄位
+    [Parameter]
+    public string ColumnToLink { get; set; } = string.Empty;
+
+    //超連結的網址
+    [Parameter]
+    public string Link { get; set; } = string.Empty;
+
 
     //初始化各值
     protected override void OnParametersSet()
@@ -104,20 +255,57 @@
         base.OnParametersSet();
         if (Items != null && Items.Count > 0)
         {
+            ItemsTemp.AddRange(Items);
             Type typeofItem = Items[0].GetType();
             propertyInfo = typeofItem.GetProperties();
-            TotalData = (Items.Count < Page * Row) ? Items.Count : Page * Row;
-            TotalPage = Items.Count / Row;
-            if (Items.Count % Row != 0)
-            {
-                TotalPage++;
-            }
-            IsFinalPage = Page == TotalPage;
-            IsFirstPage = Page == 1;
-
             ColumnsToShowArr = ColumnsToShow.Split(',');
+            if (string.IsNullOrWhiteSpace(ColumnsToSearch))
+                ColumnsToSearchArr = ColumnsToShow.Split(',');
+            else
+                ColumnsToSearchArr = ColumnsToSearch.Split(',');
+            CountPage();
+            SetSearch();
         }
     }
+
+    //選取表格內欄位的事件
+    protected async Task ChoseRowEvent(TItem item)
+    {
+        if (item.Equals(Item))
+        {
+            Item = default(TItem);
+            var json = string.Empty;
+            await SelectRowEvent.InvokeAsync(json);
+        }
+        else
+        {
+            Item = item;
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(Item);
+            await SelectRowEvent.InvokeAsync(json);
+        }
+    }
+
+    #region 分頁功能
+
+    //現在的頁數
+    [Parameter]
+    public int Page { get; set; } = 1;
+
+    //每頁要顯示的資料數量
+    [Parameter]
+    public int Row { get; set; } = 10;
+
+    //總共有多少筆資料
+    private int TotalData { get; set; }
+
+    //總共有多少頁
+    private int TotalPage { get; set; }
+
+    //是不是第一頁
+    private bool IsFirstPage { get; set; }
+
+    //是不是最後一頁
+    private bool IsFinalPage { get; set; }
 
     //下一頁
     private void NextPage()
@@ -139,68 +327,347 @@
         StateHasChanged();
     }
 
-    //選取表格內欄位的事件
-    protected async Task ChoseRowEvent(TItem item)
+    //計算頁數相關資訊
+    private void CountPage()
     {
-        if (item.Equals(Item))
+        TotalData = (Items.Count < Page * Row) ? Items.Count : Page * Row;
+        TotalPage = Items.Count / Row;
+        if (Items.Count % Row != 0)
         {
-            Item = default(TItem);
-            var json = string.Empty;
-            await SelectRowEvent.InvokeAsync(json);
+            TotalPage++;
+        }
+        IsFinalPage = Page == TotalPage;
+        IsFirstPage = Page == 1;
+
+        OrderColName = string.Empty;
+    }
+
+    #endregion
+
+    #region 查詢功能
+
+    //是否啟用查詢功能
+    [Parameter]
+    public bool UseSearch { get; set; } = false;
+
+    //是否顯示查詢視窗
+    private bool ShowSearch { get; set; } = false;
+
+    //要提供查詢的欄位
+    [Parameter]
+    public string ColumnsToSearch { get; set; } = string.Empty;
+
+    //要提供查詢的欄位陣列
+    private string[]? ColumnsToSearchArr { get; set; } = null;
+
+    //查詢條件內容
+    private GridSearch gridSearch { get; set; } = new GridSearch();
+
+    //資料內容
+    private List<GridDataForSearch> gridData { get; set; } = new List<GridDataForSearch>();
+
+    //查詢資料索引
+    private List<int> Indexs = new List<int>();
+
+    //關閉查詢視窗
+    private void CloseSearch()
+    {
+        ShowSearch = false;
+        StateHasChanged();
+    }
+
+    //開啟查詢視窗
+    private void OpenSearch()
+    {
+        ShowSearch = true;
+        StateHasChanged();
+    }
+
+    //執行查詢
+    private void OnSearch()
+    {
+        Indexs.Clear();
+        if (gridSearch.Mode.Equals("OR"))
+        {
+            foreach (var context in gridSearch.Contexts)
+            {
+                Indexs = Indexs.Union(SearchGrid(context)).ToList<int>();
+            }
         }
         else
         {
-            Item = item;
-            var json = Newtonsoft.Json.JsonConvert.SerializeObject(Item);
-            await SelectRowEvent.InvokeAsync(json);
+            for (int i = 0;i < ItemsTemp.Count; i++)
+            {
+                Indexs.Add(i);
+            }
+            foreach (var context in gridSearch.Contexts)
+            {
+                Indexs = Indexs.Intersect(SearchGrid(context)).ToList<int>();
+            }
+        }
+
+        Items.Clear();
+        foreach (int i in Indexs)
+        {
+            Items.Add(ItemsTemp[i]);
+        }
+
+        CountPage();
+        CloseSearch();        
+    }
+
+    //初始化查詢資料
+    private void SetSearch()
+    {
+        foreach (var item in ItemsTemp.Select((value, i) => new { i, value }))
+        {
+            var value = item.value;
+            var index = item.i;
+            foreach (var property in propertyInfo)
+            {
+                if (ColumnsToSearchArr != null && ColumnsToSearchArr.Contains(property.Name))
+                {
+                    Type type = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+                    string typeName = type.Name;
+                    GridDataForSearch data = new GridDataForSearch()
+                    {
+                        Index = index,
+                        Key = property.Name,
+                        TypeName = typeName
+                    };
+                    if ("DateTime".Equals(typeName))
+                    {
+                        if (property.GetValue(value) != null)
+                        {
+                            data.Value = ((DateTime)property.GetValue(value)).ToTWDateString("yyyMMdd");
+                        }
+                    }
+                    else
+                    {
+                        data.Value = property.GetValue(value)?.ToString() ?? string.Empty;
+                    }
+                    gridData.Add(data);
+                }
+            }
         }
     }
 
-    //選取表格內欄位的事件 回傳被選擇的欄位
-    [Parameter]
-    public EventCallback<string> SelectRowEvent { get; set; }
+    //檢查所選查詢欄位是否以字串方式查詢
+    private void CheckIsString()
+    {
+        foreach (var context in gridSearch.Contexts)
+        {
+            string typeName = gridData.Where(d => d.Key == context.ColName).FirstOrDefault()?.TypeName ?? string.Empty;
+            if (typeName.Equals("DateTime") || typeName.Equals("Decimal") || typeName.Equals("Int32") || typeName.Equals("Double") || typeName.Equals("Int16"))
+            {
+                context.IsString = false;
+            }
+            else
+            {
+                context.IsString = true;
+            }
 
-    //要輸出表格的資料
-    [Parameter]
-    public List<TItem> Items { get; set; } = new List<TItem>();
+        }
+    }
 
-    private TItem? Item;
+    //增加查詢條件
+    private void AddSearch()
+    {
+        GridSearchContext context = new GridSearchContext();
+        gridSearch.Contexts.Add(context);
+        StateHasChanged();
+    }
 
-    //要顯示的欄位
-    [Parameter]
-    public string ColumnsToShow { get; set; } = string.Empty;
+    //移除查詢條件
+    private void RemoveSearch(GridSearchContext context)
+    {
+        gridSearch.Contexts.Remove(context);
+        StateHasChanged();
+    }
 
-    private string[]? ColumnsToShowArr { get; set; } = null;
+    //清除查詢條件
+    private void ClearSearch()
+    {
+        gridSearch.Contexts.Clear();
+        Items.Clear();
+        Items.AddRange(ItemsTemp);
 
-    //TABLE 的 CSS
-    [Parameter]
-    public string CssClass { get; set; } = string.Empty;
+        CountPage();
+        CloseSearch();
+    }
 
-    //要有超連結的欄位
-    [Parameter]
-    public string ColumnToLink { get; set; } = string.Empty;
+    //更改查詢欄位
+    private void ChangeCol(ChangeEventArgs e)
+    {
+        foreach (var c in gridSearch.Contexts)
+        {
+            foreach (var property in propertyInfo)
+            {
+                if (property.Name == c.ColName)
+                {
+                    Type type = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+                    string typeName = type.Name;
+                    if (typeName.Equals("DateTime") ||
+                        typeName.Equals("Decimal") ||
+                        typeName.Equals("Int32") ||
+                        typeName.Equals("Double") ||
+                        typeName.Equals("Int16"))
+                    {
+                        c.IsString = false;
+                    }
+                    else
+                    {
+                        c.IsString = true;
+                    }
+                }
+            }
+        }
+    }
 
-    //超連結的網址
-    [Parameter]
-    public string Link { get; set; } = string.Empty;
+    //查詢 LIST<T>
+    private List<int> SearchGrid(GridSearchContext context)
+    {
+        List<int> tempList = new List<int>();
+        string typeName = gridData.Where(d => d.Key == context.ColName).FirstOrDefault()?.TypeName ?? string.Empty;
+        var temp = gridData.Where(d => d.Key == context.ColName);
+        if (!string.IsNullOrEmpty(typeName))
+        {
+            switch (context.Condition)
+            {
+                case "eq":
+                    if (typeName.Equals("DateTime"))
+                    {
+                        foreach (var t in temp)
+                        {
+                            if (t.Value.TWDateStringToDate() == context.Context.TWDateStringToDate())
+                                tempList.Add(t.Index);
+                        }
+                    }
+                    else if (typeName.Equals("Decimal") || typeName.Equals("Int32") || typeName.Equals("Double") || typeName.Equals("Int16"))
+                    {
+                        foreach (var t in temp)
+                        {
+                            if (t.Value == context.Context)
+                                tempList.Add(t.Index);
+                        }
+                    }
+                    else
+                    {
+                        foreach (var t in temp)
+                        {
+                            if (t.Value == context.Context)
+                                tempList.Add(t.Index);
+                        }
+                    }
 
-    //現在的頁數
-    [Parameter]
-    public int Page { get; set; } = 1;
+                    break;
+                case "like":
+                    foreach (var t in temp)
+                    {
+                        if (t.Value.Contains(context.Context))
+                            tempList.Add(t.Index);
+                    }
+                    break;
+                case "nlike":
+                    foreach (var t in temp)
+                    {
+                        if (!t.Value.Contains(context.Context))
+                            tempList.Add(t.Index);
+                    }
+                    break;
+                case "bt":
+                    if (typeName.Equals("DateTime"))
+                    {
+                        foreach (var t in temp)
+                        {
+                            if (t.Value.TWDateStringToDate() >= context.Context.TWDateStringToDate())
+                                tempList.Add(t.Index);
+                        }
+                    }
+                    else if (typeName.Equals("Decimal") || typeName.Equals("Int32") || typeName.Equals("Double") || typeName.Equals("Int16"))
+                    {
+                        foreach (var t in temp)
+                        {
+                            if (Decimal.Parse(t.Value) >= Decimal.Parse(context.Context))
+                                tempList.Add(t.Index);
+                        }
+                    }
+                    break;
+                case "lt":
+                    if (typeName.Equals("DateTime"))
+                    {
+                        foreach (var t in temp)
+                        {
+                            if (t.Value.TWDateStringToDate() <= context.Context.TWDateStringToDate())
+                                tempList.Add(t.Index);
+                        }
+                    }
+                    else if (typeName.Equals("Decimal") || typeName.Equals("Int32") || typeName.Equals("Double") || typeName.Equals("Int16"))
+                    {
+                        foreach (var t in temp)
+                        {
+                            if (Decimal.Parse(t.Value) <= Decimal.Parse(context.Context))
+                                tempList.Add(t.Index);
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
 
-    //每頁要顯示的資料數量
-    [Parameter]
-    public int Row { get; set; } = 10;
+        return tempList;
+    }
 
-    //總共有多少筆資料
-    private int TotalData { get; set; }
+    #endregion
 
-    //總共有多少頁
-    private int TotalPage{ get; set; }
+    #region 排序功能
 
-    //是不是第一頁
-    private bool IsFirstPage { get; set; }
+    //排序方式
+    private bool OrderASC { get; set; } = false;
 
-    //是不是最後一頁
-    private bool IsFinalPage { get; set; }
+    //排序欄位
+    private string OrderColName { get; set; } = string.Empty;
+
+    //排序表格
+    private void OrderCol(string colName)
+    {
+        if (colName != OrderColName)
+        {
+            OrderASC = true;
+            OrderColName = colName;
+        }
+        else
+        {
+            OrderASC = !OrderASC;
+        }
+        var tempItems = SortGrid(Items, OrderASC, colName);
+        Items.Clear();
+        Items.AddRange(tempItems);
+        StateHasChanged();
+    }
+
+    //排序 LIST<T>
+    private List<T> SortGrid<T>(List<T> list, bool sort, string colNameToOrder)
+    {
+        if (!string.IsNullOrEmpty(colNameToOrder) && list != null && list.Count > 0)
+        {
+            Type t = list[0].GetType();
+            if (sort)
+            {
+                list = list.OrderBy(
+                    a => t.InvokeMember(colNameToOrder, System.Reflection.BindingFlags.GetProperty, null, a, null)
+                ).ToList();
+            }
+            else
+            {
+                list = list.OrderByDescending(
+                    a => t.InvokeMember(colNameToOrder, System.Reflection.BindingFlags.GetProperty, null, a, null)
+                ).ToList();
+            }
+        }
+        return list ?? new List<T>();
+    }
+
+    #endregion
 }

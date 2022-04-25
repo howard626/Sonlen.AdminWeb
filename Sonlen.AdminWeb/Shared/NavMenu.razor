@@ -16,24 +16,34 @@
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="Employee">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Employees
+                <span class="oi oi-list-rich" aria-hidden="true"></span> 員工資料
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="Punch">
-                <span class="oi oi-clock" aria-hidden="true"></span> Punch in/out
+                <span class="oi oi-clock" aria-hidden="true"></span> 打卡
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="Leave">
-                <span class="oi oi-calendar" aria-hidden="true"></span> Leave Work
+                <span class="oi oi-calendar" aria-hidden="true"></span> 請假
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="WorkOvertime">
+                <span class="oi oi-calendar" aria-hidden="true"></span> 加班申請
             </NavLink>
         </div>
          <AuthorizeView Roles="@roles">
             <Authorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="ConfirmLeave">
-                        <span class="oi oi-list-rich" aria-hidden="true"></span> Confirm Leave
+                        <span class="oi oi-list-rich" aria-hidden="true"></span> 審核請假
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="ConfirmWorkOvertime">
+                        <span class="oi oi-list-rich" aria-hidden="true"></span> 審核加班申請
                     </NavLink>
                 </div>
             </Authorized>

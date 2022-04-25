@@ -20,9 +20,11 @@
             <GridAutoComponent SelectRowEvent="SelectRow" 
                             Items="leaveRecords"
                             ColumnsToShow="LeaveDesc,EmployeeName,LeaveDateDesc,AcceptDesc,Prove,LeaveHour"
+                            ColumnsToSearch="LeaveDesc,EmployeeName,LeaveDate,AcceptDesc,LeaveHour"
                             CssClass="table-hover text-nowrap"
                             Row="5"
                             ColumnToLink="Prove"
+                            UseSearch="true"
                             Link="LeaveProve"></GridAutoComponent>
         }
     </div>

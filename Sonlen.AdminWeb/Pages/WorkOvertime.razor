@@ -1,0 +1,185 @@
+﻿@page "/WorkOvertime"
+
+@inject IWorkOvertimeService workOvertimeService
+@inject IJSRuntime JS
+@attribute [Authorize]
+
+<h3>加班申請</h3>
+
+<CalendarComponent SelectDateEvent="ChoseDate">
+</CalendarComponent>
+
+<br />
+<div class="form-group">
+    <div class="col-sm-6">
+        加班項目： <input type="text" @bind-value="@model.Project" @bind-value:event="oninput" /> 
+    </div>
+</div>
+<div class="form-group">
+    <div class="col-sm-4">
+        加班時數(1.33)： <input type="text" @bind-value="@model.Pay_133" @bind-value:event="oninput" /> 
+    </div>
+    <div class="col-sm-4">
+        加班時數(1.66)： <input type="text" @bind-value="@model.Pay_166" @bind-value:event="oninput" /> 
+    </div>
+    <div class="col-sm-4">
+        加班時數(2.00)： <input type="text" @bind-value="@model.Pay_200" @bind-value:event="oninput" /> 
+    </div>
+</div>
+
+
+<button class="btn btn-success" @onclick="ConfirmClick" disabled="@IsLoading">申請</button>
+<ConfirmComponent @ref="Confirmation" ConfirmationChanged="OnConfirmClick"
+                  ConfirmationTitle=@(ConfirmTitle)
+                  ConfirmationMessage=@(ConfirmMessage)>
+</ConfirmComponent>
+
+@if (OverTimes.Count != 0)
+{
+    <div class="card">
+        <div class="card-header border-0">
+
+            <h3 class="card-title">
+                <i class="far fa-clock"></i>
+                加班紀錄
+            </h3>
+        </div>
+        <!-- /.card-header -->
+    <div class="card-body pt-0">
+            <!--The calendar -->
+        <GridAutoComponent SelectRowEvent="SelectRow"
+                           Items="OverTimes"
+                           ColumnsToShow="OverDate,AcceptDesc,Project,Pay_133,Pay_166,Pay_200"
+                           CssClass="table-hover text-nowrap"
+                           Row="5"></GridAutoComponent>
+        </div>
+        <!-- /.card-body -->
+</div>
+
+    <button class="btn btn-danger" @onclick="CancelClick" disabled="@IsLoading">取消加班</button>
+}
+
+@code {
+    //瀏覽請假頁面的 MODEL
+    private Sonlen.WebAdmin.Model.WorkOvertime model { get; set; } = new Sonlen.WebAdmin.Model.WorkOvertime();
+
+    //登入人員曾經的加班紀錄
+    private List<WorkOvertimeViewModel> OverTimes = new List<WorkOvertimeViewModel>();
+
+    //選擇的加班紀錄
+    private WorkOvertimeViewModel? SelectItem;
+
+    //是否在讀取資料
+    private bool IsLoading { get; set; } = false;
+
+    // CONFIRM 視窗
+    protected ConfirmComponent? Confirmation { get; set; }
+
+    // CONFIRM 視窗標題
+    private string ConfirmTitle { get; set; } = string.Empty;
+
+    // CONFIRM 視窗訊息
+    private string ConfirmMessage { get; set; } = string.Empty;
+
+    // CONFIRM 項目
+    private int ConfirmType { get; set; } = 0;
+
+    //初始化各值
+    protected override async Task OnInitializedAsync()
+    {
+        OverTimes = await workOvertimeService.GetOvertimeRecordByEIDAsync() ?? new List<WorkOvertimeViewModel>();
+        if (OverTimes.Count > 0)
+        {
+            OverTimes.Init();
+        }
+    }
+
+    //設定選擇的請假日期
+    protected void ChoseDate(DateTime selectDate)
+    {
+        model.OverDate = selectDate;
+    }
+
+    //請假按鈕事件
+    protected void ConfirmClick()
+    {
+        ConfirmType = 1;
+        ConfirmTitle = "加班確認";
+        ConfirmMessage = $"您確定要在 {model.OverDate.ToTWDateString()} 這天申請加班嗎？";
+        Confirmation?.Show();
+    }
+
+    //設定選擇的加班紀錄
+    protected void SelectRow(string json)
+    {
+        SelectItem = Newtonsoft.Json.JsonConvert.DeserializeObject<WorkOvertimeViewModel>(json);
+    }
+
+    //取消加班按鈕事件
+    protected void CancelClick()
+    {
+        if (SelectItem != null)
+        {
+            if (SelectItem.Accept != 0)
+            {
+                ConfirmType = -1;
+                ConfirmTitle = "取消加班";
+                ConfirmMessage = $"該加班已經被管理員審核，無法取消";
+                Confirmation?.Alert();
+            }
+            else
+            {
+                ConfirmType = 2;
+                ConfirmTitle = "取消加班確認";
+                ConfirmMessage = $"您確定要取消在 {SelectItem.OverDate.ToTWDateString()} 這天申請的加班嗎？";
+                Confirmation?.Show();
+            }
+        }
+        else
+        {
+            ConfirmType = -1;
+            ConfirmTitle = "取消加班確認";
+            ConfirmMessage = $"請選擇要取消的資料";
+            Confirmation?.Alert();
+        }
+    }
+
+    //確定申請加班
+    protected async Task OnConfirmClick(bool confirmed)
+    {
+        switch (ConfirmType)
+        {
+            // 請假確認
+            case 1:
+                if (confirmed)
+                {
+                    string result = await workOvertimeService.AddWorkOvertimeAsync(model);
+                    await JS.InvokeVoidAsync("alert", result);
+                    OverTimes =  await workOvertimeService.GetOvertimeRecordByEIDAsync() ?? new List<WorkOvertimeViewModel>();
+                    if (OverTimes.Count > 0)
+                    {
+                        OverTimes.Init();
+                    }
+                }
+                break;
+            // 取消請假確認
+            case 2:
+                if (confirmed)
+                {
+                    if (SelectItem != null)
+                    {
+                        string result = await workOvertimeService.CancelWorkOvertimeAsync(SelectItem);
+                        await JS.InvokeVoidAsync("alert", result);
+                        OverTimes = await workOvertimeService.GetOvertimeRecordByEIDAsync() ?? new List<WorkOvertimeViewModel>();
+                        if (OverTimes.Count > 0)
+                        {
+                            OverTimes.Init();
+                        }
+                    }
+                }
+                break;
+            default: break;
+        }
+    }
+
+}

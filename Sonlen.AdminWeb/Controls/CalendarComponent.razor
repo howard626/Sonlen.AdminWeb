@@ -47,12 +47,12 @@
                                 <table class="table table-sm">
                                     <thead>
                                         <tr>
-                                            <th class="prev">
-                                                <span class="fa fa-chevron-left" title="Previous Month" @onclick="MinMonth"></span>
+                                            <th class="prev" @onclick="MinMonth">
+                                                <span class="fa fa-chevron-left" title="Previous Month" ></span>
                                             </th>
                                             <th colspan="5" title="Select Month"> @(Year + "年" + Month + "月") </th>
-                                            <th class="next">
-                                                <span class="fa fa-chevron-right" title="Next Month" @onclick="PlusMonth"></span>
+                                            <th class="next" @onclick="PlusMonth">
+                                                <span class="fa fa-chevron-right" title="Next Month" ></span>
                                             </th>
                                         </tr>
                                         <tr>

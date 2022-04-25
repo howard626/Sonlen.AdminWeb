@@ -27,5 +27,25 @@ namespace Sonlen.WebAdmin.Model.Utility
 
             return leaveRecords;
         }
+
+        /// <summary>
+        /// 請假記錄轉換為輸出表格用資料
+        /// </summary>
+        /// <param name="workOvertimes">加班紀錄物件列表</param>
+        /// <returns>轉換後的請假紀錄物件列表</returns>
+        public static List<WorkOvertimeViewModel> Init(this List<WorkOvertimeViewModel> workOvertimes)
+        {
+            workOvertimes.ForEach(record => {
+                record.AcceptDesc = record.Accept switch
+                {
+                    -1 => "駁回",
+                    0 => "未審",
+                    1 => "同意",
+                    _ => "？？",
+                };
+            });
+
+            return workOvertimes;
+        }
     }
 }

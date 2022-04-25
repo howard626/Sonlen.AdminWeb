@@ -58,6 +58,7 @@ builder.Services.AddScoped<IEmployeeDapperService, EmployeeDapperService>();
 builder.Services.AddScoped<IPunchService, PunchService>();
 builder.Services.AddScoped<ILeaveService, LeaveService>();
 builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<IWorkOvertimeService, WorkOvertimeService>();
 
 
 #endregion

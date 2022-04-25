@@ -19,5 +19,6 @@ builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IPunchService, PunchService>();
 builder.Services.AddScoped<ILeaveService, LeaveService>();
+builder.Services.AddScoped<IWorkOvertimeService, WorkOvertimeService>();
 
 await builder.Build().RunAsync();
