@@ -1,26 +1,27 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\USER\\source\\repos\\Sonlen.AdminWeb\\Sonlen.WebAdmin.Model\\Sonlen.WebAdmin.Model.csproj": {}
+    "C:\\Users\\USER\\Documents\\GitHub\\Sonlen.AdminWeb\\Sonlen.WebAdmin.Model\\Sonlen.WebAdmin.Model.csproj": {}
   },
   "projects": {
-    "C:\\Users\\USER\\source\\repos\\Sonlen.AdminWeb\\Sonlen.WebAdmin.Model\\Sonlen.WebAdmin.Model.csproj": {
+    "C:\\Users\\USER\\Documents\\GitHub\\Sonlen.AdminWeb\\Sonlen.WebAdmin.Model\\Sonlen.WebAdmin.Model.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\USER\\source\\repos\\Sonlen.AdminWeb\\Sonlen.WebAdmin.Model\\Sonlen.WebAdmin.Model.csproj",
+        "projectUniqueName": "C:\\Users\\USER\\Documents\\GitHub\\Sonlen.AdminWeb\\Sonlen.WebAdmin.Model\\Sonlen.WebAdmin.Model.csproj",
         "projectName": "Sonlen.WebAdmin.Model",
-        "projectPath": "C:\\Users\\USER\\source\\repos\\Sonlen.AdminWeb\\Sonlen.WebAdmin.Model\\Sonlen.WebAdmin.Model.csproj",
+        "projectPath": "C:\\Users\\USER\\Documents\\GitHub\\Sonlen.AdminWeb\\Sonlen.WebAdmin.Model\\Sonlen.WebAdmin.Model.csproj",
         "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\USER\\source\\repos\\Sonlen.AdminWeb\\Sonlen.WebAdmin.Model\\obj\\",
+        "outputPath": "C:\\Users\\USER\\Documents\\GitHub\\Sonlen.AdminWeb\\Sonlen.WebAdmin.Model\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
         ],
         "configFilePaths": [
           "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net6.0"
@@ -85,7 +86,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.104\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.101\\RuntimeIdentifierGraph.json"
         }
       }
     }

@@ -1,31 +1,51 @@
-﻿using Sonlen.AdminWebAPI.Data;
+﻿using Dapper;
+using Sonlen.AdminWebAPI.Data;
 using Sonlen.WebAdmin.Model;
 using Sonlen.WebAdmin.Model.Utility;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace Sonlen.AdminWebAPI.Service
 {
     public class LoginService : ILoginService
     {
-        private readonly DataContext _context;
+        private readonly string connectString;
+        private readonly IEmployeeService _employeeService;
+        private readonly IDataService<ResetPassword> _resetPasswordService;
 
-        public LoginService(DataContext context)
+        public LoginService(IConfiguration configuration,
+            IEmployeeService employeeService,
+            IDataService<ResetPassword> resetPasswordService)
         {
-            this._context = context;
+            connectString = configuration["ConnectionStrings:DefaultConnection"];
+            _employeeService = employeeService;
+            _resetPasswordService = resetPasswordService;
         }
 
-        public List<Employee> GetAllEmployees()
+        public IDbConnection Connection
         {
-            return _context.Employee.ToList();
+            get { return new SqlConnection(connectString); }
         }
-        
+
+        /// 依帳號密碼取得員工資料
         public Employee? Login(string account, string password)
         {
-            return _context.Employee.FirstOrDefault(u => u.Email == account && u.LoginKey == password.ToMD5());
+            Employee employee = new Employee();
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@Email", account, DbType.String);
+            parameters.Add("@LoginKey", password.ToMD5(), DbType.String);
+
+            using (var conn = new SqlConnection(connectString))
+            {
+                employee = conn.QueryFirstOrDefault<Employee>("Login", parameters, commandType: CommandType.StoredProcedure);
+            }
+            return employee;
         }
 
+        /// 設定重設密碼認證碼
         public void SetResetPasswordToken(string email, string token)
         {
-            ResetPassword? resetPassword = _context.ResetPassword.FirstOrDefault(r => r.Email == email);
+            ResetPassword? resetPassword = _resetPasswordService.GetDataByID(email);
             if (resetPassword == null)
             {
                 resetPassword = new ResetPassword()
@@ -34,71 +54,42 @@ namespace Sonlen.AdminWebAPI.Service
                     Token = token
                 };
 
-                _context.ResetPassword.Add(resetPassword);
-                _context.SaveChanges();
-            }
-            else 
-            {
-                resetPassword.Token = token;
-
-                _context.ResetPassword.Update(resetPassword);
-                _context.SaveChanges();
-            }
-            
-        }
-
-        public string Register(RegisterModel model)
-        {
-            string msg = string.Empty;
-
-            if (_context.Employee.FirstOrDefault(u => u.Email == model.Account || u.EmployeeID == model.EmployeeID) != null)
-            {
-                msg = "帳號或身分證字號已重複，請重新輸入";
+                _resetPasswordService.InsertData(resetPassword);
             }
             else
             {
-                Employee Employee = new Employee()
-                {
-                    EmployeeID = model.EmployeeID,
-                    Email = model.Account,
-                    LoginKey = model.Password.ToMD5(),
-                    EmployeeName = model.EmployeeName,
-                    CellPhone = model.CellPhone,
-                    Birthday = model.Birthday,
-                    BankCode = model.BankCode,
-                    BankAccountNO = model.BankAccountNO,
-                    Address = model.Address,
-                    Sex = "男".Equals(model.Sex) ? (byte)1 : (byte)2,
-                    ArrivalDate = DateTime.Now
-                };
-                _context.Employee.Add(Employee);
-                _context.SaveChanges();
-                msg = "註冊成功";
+                resetPassword.Token = token;
+                _resetPasswordService.UpdateData(resetPassword);
             }
-
-            return msg;
         }
 
+        /// 重設密碼
         public string ResetPassword(ResetPasswordModel model)
         {
             string msg = string.Empty;
             if (string.IsNullOrEmpty(model.OldPassword))
             {
-                ResetPassword resetPassword = _context.ResetPassword.FirstOrDefault(r => r.Token == model.Token) ?? new ResetPassword();
-                Employee? employee = _context.Employee.FirstOrDefault(u => u.Email == resetPassword.Email);
+                ResetPassword? resetPassword = _resetPasswordService.GetDataByID(model.Account);
+                Employee? employee = _employeeService.GetDataByID(model.Account);
                 if (employee == null)
                 {
                     msg = "帳號不存在，請重新輸入";
                 }
                 else
                 {
-                    employee.LoginKey = model.Password.ToMD5();
-                    _context.Employee.Update(employee);
-                    _context.ResetPassword.Remove(resetPassword);
-                    _context.SaveChanges();
+                    if (resetPassword == null)
+                    {
+                        msg = "此帳號沒有申請重設密碼";
+                    }
+                    else
+                    {
+                        employee.LoginKey = model.Password.ToMD5();
+                        _employeeService.UpdateData(employee);
+                        _resetPasswordService.DeleteData(resetPassword);                        
+                    }
                 }
             }
-            else 
+            else
             {
 
             }
@@ -106,14 +97,31 @@ namespace Sonlen.AdminWebAPI.Service
             return msg;
         }
 
-        public Employee? GetEmployeeById(string id)
+        /// 註冊新員工
+        public string Register(RegisterModel item)
         {
-            return _context.Employee.FirstOrDefault(u => u.EmployeeID == id);
+            string msg = string.Empty;
+
+            using (var conn = Connection)
+            {
+                Employee Employee = new Employee()
+                {
+                    EmployeeID = item.EmployeeID,
+                    Email = item.Account,
+                    LoginKey = item.Password.ToMD5(),
+                    EmployeeName = item.EmployeeName,
+                    CellPhone = item.CellPhone,
+                    Birthday = item.Birthday,
+                    BankCode = item.BankCode,
+                    BankAccountNO = item.BankAccountNO,
+                    Address = item.Address,
+                    Sex = "男".Equals(item.Sex) ? (byte)1 : (byte)2,
+                    ArrivalDate = DateTime.Now
+                };
+                msg = _employeeService.InsertData(Employee);
+            }
+            return msg;
         }
 
-        public Employee? GetEmployeeByEmail(string email)
-        {
-            return _context.Employee.FirstOrDefault(u => u.Email == email);
-        }
     }
 }

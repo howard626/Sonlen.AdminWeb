@@ -17,11 +17,13 @@ namespace Sonlen.AdminWebAPI.Controller
     {
         private readonly IConfiguration configuration;
         private readonly ILoginService _loginService;
+        private readonly IEmployeeService _employeeService;
 
-        public LoginController(IConfiguration configuration, ILoginService loginService)
+        public LoginController(IConfiguration configuration, ILoginService loginService, IEmployeeService employeeService)
         {
             this.configuration = configuration;
             _loginService = loginService;
+            _employeeService = employeeService;
         }
 
         /// <summary>
@@ -62,21 +64,17 @@ namespace Sonlen.AdminWebAPI.Controller
         public ActionResult<string> GetEmployeeById([FromBody] Employee employee)
         {
 
-            return Ok(_loginService.GetEmployeeById(employee.EmployeeID ?? string.Empty));
+            return Ok(_employeeService.GetDataByID(employee.EmployeeID ?? string.Empty));
         }
 
         /// <summary>
         /// 取得全部員工資料
         /// </summary>
-        /// <param name="auth"></param>
         /// <returns></returns>
         [HttpPost("GetAllEmployees")]
-        public ActionResult<string> GetAllEmployees(AuthModel<string> auth)
+        public ActionResult<string> GetAllEmployees()
         {
-            if (CheckAuth(auth.Token))
-                return Ok(_loginService.GetAllEmployees());
-            else
-                return BadRequest("權限不足");
+            return Ok(_employeeService.GetAllDatas());
         }
 
         /// <summary>
@@ -88,7 +86,7 @@ namespace Sonlen.AdminWebAPI.Controller
         public ActionResult<string> ForgotPassword([FromBody] LoginModel loginInfo)
         {
 
-            Employee? employee = _loginService.GetEmployeeByEmail(loginInfo.Account);
+            Employee? employee = _employeeService.GetDataByEmail(loginInfo.Account);
 
             if (employee != null)
             {
@@ -129,15 +127,14 @@ namespace Sonlen.AdminWebAPI.Controller
         }
 
         /// <summary>
-        /// 寄出忘記密碼重設確認信件
+        /// 重設密碼
         /// </summary>
         /// <param name="loginInfo"></param>
         /// <returns></returns>
         [HttpPost("ResetPassword")]
         public ActionResult<string> ResetPassword([FromBody] ResetPasswordModel loginInfo)
         {
-            string result = _loginService.ResetPassword(loginInfo);
-            if (string.IsNullOrEmpty(result))
+            if (string.IsNullOrEmpty(_loginService.ResetPassword(loginInfo)))
             {
                 return Ok("重設密碼成功");
             }
@@ -194,37 +191,5 @@ namespace Sonlen.AdminWebAPI.Controller
             return userToken;
         }
 
-        /// <summary>
-        /// 檢查授權
-        /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        private bool CheckAuth(string token)
-        {
-            if (!string.IsNullOrEmpty(token))
-            {
-                if (token.Split('.').Length == 3)
-                {
-
-                    try
-                    {
-                        var claims = JwtParser.ParseClaimsFromJwt(token);
-                        if (claims.Any())
-                        {
-                            var employee = _loginService.GetEmployeeByEmail(claims.FirstOrDefault(c => c.Type == "Email")?.Value ?? string.Empty);
-                            if (employee != null)
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
-                }
-            }
-            return false;
-        }
     }
 }

@@ -6,6 +6,7 @@ using Sonlen.AdminWebAPI.Data;
 using Sonlen.AdminWebAPI.Extensions;
 using Sonlen.AdminWebAPI.LogSetting;
 using Sonlen.AdminWebAPI.Service;
+using Sonlen.WebAdmin.Model;
 using System.Text;
 
 #region ConfigureServices
@@ -53,6 +54,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 
 builder.Services.AddScoped<ILoginService, LoginService>();
+builder.Services.AddScoped<IDataService<ResetPassword>, ResetPasswordService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IEmployeeDapperService, EmployeeDapperService>();
 builder.Services.AddScoped<IPunchService, PunchService>();

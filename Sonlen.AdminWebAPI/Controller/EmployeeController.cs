@@ -10,10 +10,12 @@ namespace Sonlen.AdminWebAPI.Controller
     [ApiController]
     public class EmployeeController : ControllerBase
     {
+        private readonly IEmployeeService _employeeService;
         private readonly IEmployeeDapperService _employeeDapperService;
 
-        public EmployeeController(IEmployeeDapperService employeeDapperService)
+        public EmployeeController(IEmployeeService employeeService, IEmployeeDapperService employeeDapperService)
         {
+            _employeeService = employeeService;
             _employeeDapperService = employeeDapperService;
         }
 
@@ -25,15 +27,11 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("Add")]
         public ActionResult<string> AddEmployee([FromBody] Employee employee)
         {
-            int result = _employeeDapperService.AddEmployee(employee);
-            if (result > 0)
+            string msg = _employeeService.InsertData(employee);
+            if (string.IsNullOrEmpty(msg))
                 return Ok("新增員工成功");
-            else if (result == -1)
-                return Ok("新增員工失敗：EmployeeID 已經存在");
-            else if (result == -2)
-                return Ok("新增員工失敗：Email 已經存在");
-            else
-                return BadRequest("新增員工失敗");
+            else 
+                return Ok($"新增員工失敗：{msg}");
         }
 
         /// <summary>
@@ -44,16 +42,12 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("Update")]
         public ActionResult<string> UpdateEmployee([FromBody] Employee employee)
         {
-            int result = _employeeDapperService.UpdateEmployee(employee);
-            
-            if (result > 0)
+            string msg = _employeeService.UpdateData(employee);
+
+            if (string.IsNullOrEmpty(msg))
                 return Ok("更新員工成功");
-            else if (result == -3)
-                return Ok("更新員工失敗：EmployeeID 不存在");
-            else if (result == -2)
-                return Ok("更新員工失敗：Email 已經存在");
             else
-                return BadRequest("更新員工失敗");
+                return Ok($"更新員工失敗：{msg}");
         }
 
         /// <summary>
@@ -64,10 +58,11 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("Delete")]
         public ActionResult<string> DeleteEmployee([FromBody] Employee employee)
         {
-            if (_employeeDapperService.DeleteEmployee(employee) > 0)
+            string msg = _employeeService.DeleteData(employee);
+            if (string.IsNullOrEmpty(msg))
                 return Ok("刪除員工成功");
             else
-                return BadRequest("刪除員工失敗");
+                return Ok($"刪除員工失敗：{msg}");
         }
 
         /// <summary>
@@ -78,7 +73,7 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("GetEmployee")]
         public ActionResult<string> GetEmployeeById([FromBody] Employee employee)
         {
-            return Ok(_employeeDapperService.GetEmployeeById(employee.EmployeeID ?? string.Empty));
+            return Ok(_employeeService.GetDataByID(employee.EmployeeID ?? string.Empty));
         }
 
         /// <summary>
@@ -88,7 +83,7 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("GetAllEmployees")]
         public ActionResult<string> GetAllEmployees()
         {
-            return Ok(_employeeDapperService.GetAllEmployees());   
+            return Ok(_employeeService.GetAllDatas());   
         }
 
         /// <summary>
