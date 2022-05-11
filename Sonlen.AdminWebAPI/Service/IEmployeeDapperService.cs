@@ -55,19 +55,5 @@ namespace Sonlen.AdminWebAPI.Service
         /// <param name="employee"></param>
         /// <returns></returns>
         int UpdateEmployee(Employee employee);
-
-        /// <summary>
-        /// 取得員工通知
-        /// </summary>
-        /// <param name="employee"></param>
-        /// <returns></returns>
-        IEnumerable<Notice> GeNoticeByEID(Employee employee);
-
-        /// <summary>
-        /// 設定通知為已讀
-        /// </summary>
-        /// <param name="notices"></param>
-        /// <returns></returns>
-        int SetNoticeToIsRead(List<Notice> notices);
     }
 }

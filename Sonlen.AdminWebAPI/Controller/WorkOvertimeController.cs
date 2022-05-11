@@ -10,10 +10,13 @@ namespace Sonlen.AdminWebAPI.Controller
     public class WorkOvertimeController : ControllerBase
     {
         private readonly IWorkOvertimeService _workOvertimeService;
+        private readonly IWorkOvertimeRecordService _workOvertimeRecordService;
 
-        public WorkOvertimeController(IWorkOvertimeService punchService)
+        public WorkOvertimeController(IWorkOvertimeService workOvertimeService,
+            IWorkOvertimeRecordService workOvertimeRecordService)
         {
-            _workOvertimeService = punchService;
+            _workOvertimeService = workOvertimeService;
+            _workOvertimeRecordService = workOvertimeRecordService;
         }
 
         /// <summary>
@@ -23,7 +26,7 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("GetAllWorkOvertime")]
         public ActionResult<string> GetAllWorkOvertime()
         {
-            return Ok(_workOvertimeService.GetAllWorkOvertime());
+            return Ok(_workOvertimeRecordService.GetAllViewDatas());
         }
 
         /// <summary>
@@ -34,7 +37,7 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("GetOvertimeRecordByEID")]
         public ActionResult<string> GetOvertimeRecordByEID([FromBody] Employee employee)
         {
-            return Ok(_workOvertimeService.GetWorkOvertimeByEID(employee.EmployeeID));
+            return Ok(_workOvertimeRecordService.GetDatasByEID(employee.EmployeeID));
         }
 
         /// <summary>

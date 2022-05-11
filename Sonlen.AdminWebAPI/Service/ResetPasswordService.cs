@@ -6,7 +6,7 @@ using System.Data.SqlClient;
 
 namespace Sonlen.AdminWebAPI.Service
 {
-    public class ResetPasswordService : IDataService<ResetPassword>
+    public class ResetPasswordService : IResetPasswordService
     {
         private readonly string connectString;
 
@@ -33,10 +33,7 @@ namespace Sonlen.AdminWebAPI.Service
             return msg;
         }
 
-        public IEnumerable<ResetPassword> GetAllDatas()
-        {
-            throw new NotImplementedException();
-        }
+        
 
         public ResetPassword? GetDataByID(string id)
         {
@@ -48,7 +45,7 @@ namespace Sonlen.AdminWebAPI.Service
             {
                 return conn.QueryFirstOrDefault<ResetPassword>("GetResetPasswordToken", parameters, commandType: CommandType.StoredProcedure);
             }
-            
+
         }
 
         public string InsertData(ResetPassword item)
@@ -78,5 +75,14 @@ namespace Sonlen.AdminWebAPI.Service
 
             return msg;
         }
+
+        #region 未實作項目
+
+        public IEnumerable<ResetPassword> GetAllDatas()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
     }
 }

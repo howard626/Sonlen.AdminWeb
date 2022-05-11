@@ -8,11 +8,21 @@ namespace Sonlen.AdminWebAPI.Controller
     [ApiController]
     public class LeaveController : ControllerBase
     {
+        private readonly IFileService _fileService;
         private readonly ILeaveService _leaveService;
+        private readonly ILeaveRecordService _leaveRecordeService;
+        private readonly ILeaveTypeService _leaveTypeService;
 
-        public LeaveController(ILeaveService leaveService)
+        public LeaveController(IFileService fileService
+            , ILeaveService leaveService
+            , ILeaveRecordService leaveRecordeService
+            , ILeaveTypeService leaveTypeService)
         {
+            _fileService = fileService;
             _leaveService = leaveService;
+            _leaveRecordeService = leaveRecordeService;
+            _leaveTypeService = leaveTypeService;
+            
         }
 
         /// <summary>
@@ -55,7 +65,7 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("GetLeaveTypes")]
         public ActionResult<string> GetLeaveTypes()
         {
-            return Ok(_leaveService.GetLeaveTypes());
+            return Ok(_leaveTypeService.GetAllDatas());
         }
 
         /// <summary>
@@ -65,7 +75,7 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("GetAllLeaveRecord")]
         public ActionResult<string> GetAllLeaveRecord()
         {
-            return Ok(_leaveService.GetAllLeaveRecord());
+            return Ok(_leaveRecordeService.GetAllViewDatas());
         }
 
         /// <summary>
@@ -76,7 +86,7 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("GetLeaveRecordByEID")]
         public ActionResult<string> GetLeaveRecordByEID([FromBody] Employee employee)
         {
-            return Ok(_leaveService.GetLeaveRecordByEID(employee.EmployeeID));
+            return Ok(_leaveRecordeService.GetDatasByEID(employee.EmployeeID));
         }
 
         /// <summary>
@@ -87,7 +97,7 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("AgreeLeaveRecord")]
         public ActionResult<string> AgreeLeaveRecord([FromBody] LeaveRecord leave)
         {
-            int result = _leaveService.AgreeLeaveRecord(leave.EmployeeID, leave.LeaveDate);
+            int result = _leaveService.AgreeLeaveRecord(leave);
             return Ok(result > 0 ? "同意成功" : "同意失敗");
         }
 
@@ -99,7 +109,7 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("DisagreeLeaveRecord")]
         public ActionResult<string> DisagreeLeaveRecord([FromBody] LeaveRecord leave)
         {
-            int result = _leaveService.DisagreeLeaveRecord(leave.EmployeeID, leave.LeaveDate);
+            int result = _leaveService.DisagreeLeaveRecord(leave);
             return Ok(result > 0 ? "駁回成功" : "駁回失敗");
         }
 
@@ -111,7 +121,7 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("GetLeaveProve")]
         public ActionResult<string> GetLeaveProve([FromBody] UploadFile file)
         {
-            return Ok(_leaveService.GetLeaveProve(file));
+            return Ok(_fileService.DownloadFile(file.FileName));
         }
     }
 }

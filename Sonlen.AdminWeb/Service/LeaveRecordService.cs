@@ -6,12 +6,12 @@ using System.Text;
 
 namespace Sonlen.AdminWeb.Service
 {
-    public class LeaveService : ILeaveService
+    public class LeaveRecordService : ILeaveRecordService
     {
         private readonly HttpClient httpClient;
         private readonly string API_ADDRESS = $"{Setting.API_ADDRESS}Leave/";
         private readonly ILocalStorageService localStorageService;
-        public LeaveService(HttpClient httpClient, ILocalStorageService localStorageService)
+        public LeaveRecordService(HttpClient httpClient, ILocalStorageService localStorageService)
         {
             this.httpClient = httpClient;
             this.localStorageService = localStorageService;
@@ -40,7 +40,7 @@ namespace Sonlen.AdminWeb.Service
         }
 
         /** 取消請假*/
-        public async Task<string> LeaveOffAsync(LeaveRecord leave)
+        public async Task<string> DeleteDataAsync(LeaveRecordViewModel leave)
         {
             var json = JsonConvert.SerializeObject(leave);
             HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
@@ -51,26 +51,8 @@ namespace Sonlen.AdminWeb.Service
             return resContent;
         }
 
-        /** 取得請假類別*/
-        public async Task<List<LeaveType>> GetLeaveTypesAsync()
-        {
-            List<LeaveType>? leaveTypes = null;
-
-            HttpContent httpContent = new StringContent("", Encoding.UTF8, "application/json");
-
-            var response = await httpClient.PostAsync($"{API_ADDRESS}GetLeaveTypes", httpContent);
-            var resContent = await response.Content.ReadAsStringAsync();
-
-            if (response.IsSuccessStatusCode)
-            {
-                leaveTypes = JsonConvert.DeserializeObject<List<LeaveType>>(resContent);
-            }
-
-            return leaveTypes ?? new List<LeaveType>();
-        }
-
         /** 取得全部請假紀錄*/
-        public async Task<List<LeaveRecordViewModel>> GetAllLeaveRecordAsync()
+        public async Task<List<LeaveRecordViewModel>> GetAllDataAsync()
         {
             List<LeaveRecordViewModel>? leaveRecords = null;
 
@@ -88,7 +70,7 @@ namespace Sonlen.AdminWeb.Service
         }
 
         /** 從 EmployeeID 取得請假紀錄*/
-        public async Task<List<LeaveRecordViewModel>> GetLeaveRecordByEIDAsync()
+        public async Task<List<LeaveRecordViewModel>> GetDataByEIDAsync()
         {
             List<LeaveRecordViewModel>? leaveRecords = null;
 
@@ -139,9 +121,9 @@ namespace Sonlen.AdminWeb.Service
         }
 
         /** 同意請假*/
-        public async Task<string> AgreeLeaveRecordAsync(LeaveRecordViewModel leave)
+        public async Task<string> AgreeAsync(LeaveRecordViewModel item)
         {
-            var json = JsonConvert.SerializeObject(leave);
+            var json = JsonConvert.SerializeObject(item);
             HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await httpClient.PostAsync($"{API_ADDRESS}AgreeLeaveRecord", httpContent);
@@ -151,9 +133,9 @@ namespace Sonlen.AdminWeb.Service
         }
 
         /** 駁回請假*/
-        public async Task<string> DisagreeLeaveRecordAsync(LeaveRecordViewModel leave)
+        public async Task<string> DisagreeAsync(LeaveRecordViewModel item)
         {
-            var json = JsonConvert.SerializeObject(leave);
+            var json = JsonConvert.SerializeObject(item);
             HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await httpClient.PostAsync($"{API_ADDRESS}DisagreeLeaveRecord", httpContent);
@@ -161,5 +143,22 @@ namespace Sonlen.AdminWeb.Service
 
             return resContent;
         }
+
+        #region 未實作項目
+        public Task<string> AddDataAsync(LeaveRecordViewModel item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<LeaveRecordViewModel?> GetDataByIDAsync(string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> UpdateDataAsync(LeaveRecordViewModel item)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
     }
 }

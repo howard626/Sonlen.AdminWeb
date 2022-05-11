@@ -8,48 +8,44 @@ namespace Sonlen.AdminWebAPI.Service
 {
     public class PunchService : IPunchService
     {
-        private readonly string connectString;
 
-        public PunchService(IConfiguration configuration)
+        private readonly IPunchRecordService _punchRecordService;
+        public PunchService( IPunchRecordService punchRecordService)
         {
-            connectString = configuration["ConnectionStrings:DefaultConnection"];
-        }
-
-        public IDbConnection Connection
-        {
-            get { return new SqlConnection(connectString); }
+            _punchRecordService = punchRecordService;
         }
 
         public int PunchIn(Employee employee)
         {
             int result;
 
-            using (var conn = Connection)
+            Punch? punch = _punchRecordService.GetDataByID($"{employee.EmployeeID},{DateTime.Today}");
+            if (punch == null)
             {
-                DynamicParameters parameters = new DynamicParameters();
-                parameters.Add("@EmployeeID", employee.EmployeeID, DbType.String);
-                parameters.Add("@PunchDate", DateTime.Today, DbType.Date);
-
-                Punch punch = conn.QueryFirstOrDefault<Punch>("GetPunchRecord", parameters, commandType: CommandType.StoredProcedure);
-                if (punch == null)
+                DateTime now = DateTime.Now;
+                punch = new Punch()
                 {
-                    DateTime now = DateTime.Now;
-                    punch = new Punch()
-                    {
-                        EmployeeID = employee.EmployeeID,
-                        PunchDate = DateTime.Today,
-                        PunchInTime = $"{now.Hour.ToString().PadLeft(2, '0')}:{now.Minute.ToString().PadLeft(2, '0')}",
-                        PunchOutTime = null,
-                        WorkHour = null
-                    };
+                    EmployeeID = employee.EmployeeID,
+                    PunchDate = DateTime.Today,
+                    PunchInTime = $"{now.Hour.ToString().PadLeft(2, '0')}:{now.Minute.ToString().PadLeft(2, '0')}",
+                    PunchOutTime = null,
+                    WorkHour = null
+                };
 
-                    parameters = punch.ToDynamicParameters();
-                    result = conn.Execute("PunchIn", parameters, commandType: CommandType.StoredProcedure);
-                }
-                else 
+                string msg = _punchRecordService.InsertData(punch);
+                if (string.IsNullOrWhiteSpace(msg))
                 {
-                    result = -1;
+                    result = 1;
                 }
+                else
+                {
+                    result = -99;//未知錯誤
+                    return result;
+                }
+            }
+            else 
+            {
+                result = -1; // 已經有上班打卡紀錄
             }
 
             return result;
@@ -59,47 +55,49 @@ namespace Sonlen.AdminWebAPI.Service
         {
             int result;
 
-            using (var conn = Connection)
+            Punch? punch = _punchRecordService.GetDataByID($"{employee.EmployeeID},{DateTime.Today}");
+            if (punch != null)
             {
-                DynamicParameters parameters = new DynamicParameters();
-                parameters.Add("@EmployeeID", employee.EmployeeID, DbType.String);
-                parameters.Add("@PunchDate", DateTime.Today, DbType.Date);
-
-                Punch punch = conn.QueryFirstOrDefault<Punch>("GetPunchRecord", parameters, commandType: CommandType.StoredProcedure);
-                if (punch != null)
+                if (string.IsNullOrEmpty(punch.PunchOutTime))
                 {
-                    if (string.IsNullOrEmpty(punch.PunchOutTime))
+                    DateTime now = DateTime.Now;
+                    int punchInHour = int.Parse(punch.PunchInTime.Split(':')[0]);
+                    int hour = now.Hour - punchInHour;
+                    int min = now.Minute - int.Parse(punch.PunchInTime.Split(':')[1]);
+                    if (now.Hour >= 13 && punchInHour <= 13)
                     {
-                        DateTime now = DateTime.Now;
-                        int punchInHour = int.Parse(punch.PunchInTime.Split(':')[0]);
-                        int hour = now.Hour - punchInHour;
-                        int min = now.Minute - int.Parse(punch.PunchInTime.Split(':')[1]);
-                        if (now.Hour >= 13 && punchInHour <= 13)
-                        {
-                            hour -= 1;
-                        }
-                        if (min < 0)
-                        {
-                            min += 60;
-                            hour -= 1;
-                        }
-                        decimal workHour = hour + (decimal)min / 60;
-                        punch.PunchOutTime = $"{now.Hour.ToString().PadLeft(2, '0')}:{now.Minute.ToString().PadLeft(2, '0')}";
-                        punch.WorkHour = workHour;
-
-                        parameters = punch.ToDynamicParameters();
-                        result = conn.Execute("PunchOut", parameters, commandType: CommandType.StoredProcedure);
+                        hour -= 1;
                     }
-                    else 
+                    if (min < 0)
                     {
-                        result = -2;
+                        min += 60;
+                        hour -= 1;
+                    }
+                    decimal workHour = hour + (decimal)min / 60;
+                    punch.PunchOutTime = $"{now.Hour.ToString().PadLeft(2, '0')}:{now.Minute.ToString().PadLeft(2, '0')}";
+                    punch.WorkHour = workHour;
+
+                    string msg = _punchRecordService.UpdateData(punch);
+                    if (string.IsNullOrWhiteSpace(msg))
+                    {
+                        result = 1;
+                    }
+                    else
+                    {
+                        result = -99;//未知錯誤
+                        return result;
                     }
                 }
                 else 
                 {
-                    result = -1;
+                    result = -2; // 已經有下班打卡紀錄
                 }
             }
+            else 
+            {
+                result = -1; // 沒有上班打卡紀錄
+            }
+            
             return result;
         }
     }

@@ -1,6 +1,7 @@
 ﻿@page "/ConfirmLeave"
 
-@inject ILeaveService leaveService
+@inject ILeaveRecordService leaveService
+@inject ILeaveTypeService leaveTypeService
 @inject IJSRuntime JS
 @attribute [Authorize(Roles = "admin")]
 
@@ -35,7 +36,7 @@
 <button class="btn btn-danger" @onclick="DisagreeLeave" disabled="@IsLoading">駁回</button>
 
 <ConfirmComponent @ref="Confirmation" ConfirmationChanged="ConfirmClick"
-         ConfirmationTitle=@("審核確認")
+         ConfirmationTitle=@(ConfirmTitle)
          ConfirmationMessage=@(ConfirmMessage)>
 </ConfirmComponent>
 
@@ -53,8 +54,14 @@
     // CONFIRM 視窗
     protected ConfirmComponent? Confirmation { get; set; }
 
+    // CONFIRM 視窗標題
+    private string ConfirmTitle { get; set; } = string.Empty;
+
     // CONFIRM 視窗訊息
     private string ConfirmMessage { get; set; } = string.Empty;
+
+    // CONFIRM 項目 -> -1: ALTER ,1: CONFIRM
+    private int ConfirmType { get; set; } = 0;
 
     //是否在讀取資料
     private bool IsLoading { get; set; } = false;
@@ -67,13 +74,28 @@
     {
         if (SelectItem != null)
         {
-            Check_Result = 1;
-            ConfirmMessage = $"請確定是否要同意{SelectItem.EmployeeName}於{SelectItem.LeaveDateDesc}請的{SelectItem.LeaveDesc}";
-            Confirmation?.Show();
+            if (SelectItem.Accept != 0)
+            {
+                ConfirmMessage = "這個項目已經被審核過了。";
+                ConfirmTitle = "審核結果";
+                ConfirmType = -1;
+                Confirmation?.Alert();
+            }
+            else
+            {
+                ConfirmType = 1;
+                Check_Result = 1;
+                ConfirmTitle = "審核確認";
+                ConfirmMessage = $"請確定是否要同意{SelectItem.EmployeeName}於{SelectItem.LeaveDateDesc}請的{SelectItem.LeaveDesc}";
+                Confirmation?.Show();
+            }
         }
         else
         {
-            await JS.InvokeVoidAsync("alert", "請選擇要審核的資料");
+            ConfirmType = -1;
+            ConfirmMessage = "請選擇要審核的資料";
+            ConfirmTitle = "審核確認";
+            Confirmation?.Alert();
         }
     }
 
@@ -82,26 +104,42 @@
     {
         if (SelectItem != null)
         {
-            Check_Result = -1;
-            ConfirmMessage = $"請確定是否要駁回{SelectItem.EmployeeName}於{SelectItem.LeaveDateDesc}請的{SelectItem.LeaveDesc}";
-            Confirmation?.Show();
+            if (SelectItem.Accept != 0)
+            {
+                ConfirmType = -1;
+                ConfirmMessage = "這個項目已經被審核過了。";
+                ConfirmTitle = "審核結果";
+                Confirmation?.Alert();
+            }
+            else
+            {
+                ConfirmType = 1;
+                Check_Result = -1;
+                ConfirmTitle = "審核確認";
+                ConfirmMessage = $"請確定是否要駁回{SelectItem.EmployeeName}於{SelectItem.LeaveDateDesc}請的{SelectItem.LeaveDesc}";
+                Confirmation?.Show();
+            }
         }
         else
         {
-            await JS.InvokeVoidAsync("alert", "請選擇要審核的資料");
+            ConfirmType = -1;
+            ConfirmMessage = "請選擇要審核的資料";
+            ConfirmTitle = "審核確認";
+            Confirmation?.Alert();
         }
     }
 
     //初始化各值
     protected override async Task OnInitializedAsync()
     {
-        leaveTypes = await leaveService.GetLeaveTypesAsync() ?? new List<LeaveType>();
+        leaveTypes = await leaveTypeService.GetAllDataAsync() ?? new List<LeaveType>();
         GetAllLeaveRecordAsync();
     }
 
+    //取得所有請假紀錄
     private async void GetAllLeaveRecordAsync()
     {
-        leaveRecords = await leaveService.GetAllLeaveRecordAsync() ?? new List<LeaveRecordViewModel>();
+        leaveRecords = await leaveService.GetAllDataAsync() ?? new List<LeaveRecordViewModel>();
 
         if (leaveRecords.Count > 0 && leaveTypes.Count > 0)
         {
@@ -119,30 +157,45 @@
     //確定審核結果
     protected async Task ConfirmClick(bool confirmed)
     {
-        if (confirmed)
+        if (ConfirmType != -1)
         {
-            if (Check_Result == 1)
+            if (confirmed)
             {
-                if (SelectItem != null)
+                if (Check_Result == 1)
                 {
-                    await leaveService.AgreeLeaveRecordAsync(SelectItem);
-                    GetAllLeaveRecordAsync();
+                    if (SelectItem != null)
+                    {
+                        ConfirmType = -1;
+                        ConfirmMessage = await leaveService.AgreeAsync(SelectItem);
+                        ConfirmTitle = "審核結果";
+                        Confirmation?.Alert();
+                        GetAllLeaveRecordAsync();
+                    }
+                    else
+                    {
+                        ConfirmType = -1;
+                        ConfirmMessage = "請選擇要審核的資料";
+                        ConfirmTitle = "審核確認";
+                        Confirmation?.Alert();
+                    }
                 }
-                else
+                else if (Check_Result == -1)
                 {
-                    await JS.InvokeVoidAsync("alert", "請選擇要審核的資料");
-                }
-            }
-            else if (Check_Result == -1)
-            {
-                if (SelectItem != null)
-                {
-                    await leaveService.DisagreeLeaveRecordAsync(SelectItem);
-                    GetAllLeaveRecordAsync();
-                }
-                else
-                {
-                    await JS.InvokeVoidAsync("alert", "請選擇要審核的資料");
+                    if (SelectItem != null)
+                    {
+                        ConfirmType = -1;
+                        ConfirmMessage = await leaveService.DisagreeAsync(SelectItem);
+                        ConfirmTitle = "審核結果";
+                        Confirmation?.Alert();
+                        GetAllLeaveRecordAsync();
+                    }
+                    else
+                    {
+                        ConfirmType = -1;
+                        ConfirmMessage = "請選擇要審核的資料";
+                        ConfirmTitle = "審核確認";
+                        Confirmation?.Alert();
+                    }
                 }
             }
         }

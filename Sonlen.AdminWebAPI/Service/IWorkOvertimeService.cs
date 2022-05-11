@@ -5,19 +5,6 @@ namespace Sonlen.AdminWebAPI.Service
 {
     public interface IWorkOvertimeService
     {
-        IDbConnection Connection { get; }
-
-        /// <summary>
-        /// 取得全部加班紀錄
-        /// </summary>
-        /// <returns></returns>
-        IEnumerable<WorkOvertimeViewModel> GetAllWorkOvertime();
-
-        /// <summary>
-        /// 從 EmployeeID 取得加班紀錄
-        /// </summary>
-        /// <returns></returns>
-        IEnumerable<WorkOvertime> GetWorkOvertimeByEID(string employeeID);
 
         /// <summary>
         /// 申請加班

@@ -1,5 +1,4 @@
 ﻿@page "/"
-@inject ILoginService loginService
 @inject IEmployeeService employeeService
 @attribute [Authorize]
 
@@ -49,7 +48,7 @@ Welcome to your new app.
         authState = await _authState;
         if (authState != null)
         {
-            employees = await loginService.GetAllEmployeeAsync() ?? new List<Employee>();
+            employees = await employeeService.GetAllDataAsync() ?? new List<Employee>();
             notices = await employeeService.GetEmployeeNoticeAsync(new Employee() { EmployeeID = authState.User.Claims.FirstOrDefault(c => c.Type == "EmployeeID")?.Value ?? string.Empty}) ?? new List<Notice>();
             foreach (var item in notices.Select((notice, index) => (notice, index)))
             {

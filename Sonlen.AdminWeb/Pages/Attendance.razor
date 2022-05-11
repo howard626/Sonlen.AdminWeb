@@ -1,0 +1,56 @@
+﻿@page "/Attendance"
+
+@inject IEmployeeService employeeService
+@inject IJSRuntime JS
+@attribute [Authorize(Roles = "admin")]
+
+<h3>員工列表</h3>
+<a href="/Employee/Add"> Add Employee</a>
+
+@if (employees.Count != 0)
+{
+    <GridAutoComponent Items="employees"
+                       ColumnsToShow="EmployeeID,EmployeeName,ArrivalDate,Birthday,CellPhone"
+                       ColumnToLink="EmployeeID"
+                       UseSearch="true"
+                       Row = "5"
+                       Link="Employee"></GridAutoComponent>
+}
+
+<button class="btn btn-success" @onclick="PrintAtt" disabled="@IsLoading">列印考勤</button>
+
+@code {
+    //初始化各值
+    protected override async Task OnInitializedAsync()
+    {
+        employees = await employeeService.GetAllDataAsync() ?? new List<Employee>();   
+    }
+
+    //員工列表
+    private List<Employee> employees = new List<Employee>();
+
+    //是否在讀取資料
+    private bool IsLoading { get; set; } = false;
+
+    //選擇的員工
+    private Employee? SelectItem;
+
+    //設定選擇的加班紀錄
+    protected void SelectRow(string json)
+    {
+        SelectItem = Newtonsoft.Json.JsonConvert.DeserializeObject<Employee>(json);
+    }
+
+    //列印考勤
+    protected async void PrintAtt()
+    {
+        if (SelectItem != null)
+        {
+            
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "請選擇要列印的資料");
+        }
+    }
+}

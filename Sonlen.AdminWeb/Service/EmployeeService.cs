@@ -15,7 +15,7 @@ namespace Sonlen.AdminWeb.Service
         }
 
         /** 以身分證字號取得單一員工資料*/
-        public async Task<Employee?> GetEmployeeAsync(string id)
+        public async Task<Employee?> GetDataByIDAsync(string id)
         {
             Employee employee = new Employee()
             {
@@ -36,7 +36,7 @@ namespace Sonlen.AdminWeb.Service
         }
 
         /** 取得全部員工資訊*/
-        public async Task<List<Employee>> GetAllEmployeeAsync()
+        public async Task<List<Employee>> GetAllDataAsync()
         {
             List<Employee>? employees = null;
 
@@ -55,7 +55,7 @@ namespace Sonlen.AdminWeb.Service
         }
 
         /** 新增員工*/
-        public async Task<string> AddEmployeeAsync(Employee employee)
+        public async Task<string> AddDataAsync(Employee employee)
         {
             var json = JsonConvert.SerializeObject(employee);
             HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
@@ -67,7 +67,7 @@ namespace Sonlen.AdminWeb.Service
         }
 
         /** 更新員工*/
-        public async Task<string> UpdateEmployeeAsync(Employee employee)
+        public async Task<string> UpdateDataAsync(Employee employee)
         {
             var json = JsonConvert.SerializeObject(employee);
             HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
@@ -79,7 +79,7 @@ namespace Sonlen.AdminWeb.Service
         }
 
         /** 刪除員工*/
-        public async Task<string> DeleteEmployeeAsync(Employee employee)
+        public async Task<string> DeleteDataAsync(Employee employee)
         {
             var json = JsonConvert.SerializeObject(employee);
             HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");

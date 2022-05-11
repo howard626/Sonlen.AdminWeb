@@ -11,12 +11,13 @@ namespace Sonlen.AdminWebAPI.Controller
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;
-        private readonly IEmployeeDapperService _employeeDapperService;
+        private readonly INoticeService _noticeService;
 
-        public EmployeeController(IEmployeeService employeeService, IEmployeeDapperService employeeDapperService)
+        public EmployeeController(IEmployeeService employeeService
+            , INoticeService noticeService)
         {
             _employeeService = employeeService;
-            _employeeDapperService = employeeDapperService;
+            _noticeService = noticeService;
         }
 
         /// <summary>
@@ -94,7 +95,7 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("GeNoticeByEID")]
         public ActionResult<string> GeNoticeByEID([FromBody] Employee employee)
         {
-            return Ok(_employeeDapperService.GeNoticeByEID(employee));
+            return Ok(_noticeService.GetDatasByEID(employee.EmployeeID));
         }
 
         /// <summary>
@@ -105,7 +106,7 @@ namespace Sonlen.AdminWebAPI.Controller
         [HttpPost("SetNoticeToIsRead")]
         public ActionResult<string> SetNoticeToIsRead([FromBody] List<Notice> notices)
         {
-            int result = _employeeDapperService.SetNoticeToIsRead(notices);
+            int result = _noticeService.SetNoticeToIsRead(notices);
             if (result > 0)
                 return Ok("已將通知標誌為已讀");
             else

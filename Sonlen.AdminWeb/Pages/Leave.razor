@@ -1,7 +1,7 @@
 ﻿@page "/Leave"
 
-@inject ILeaveService leaveService
-@inject IJSRuntime JS
+@inject ILeaveRecordService leaveService
+@inject ILeaveTypeService leaveTypeService
 @attribute [Authorize]
 
 <h3>Leave</h3>
@@ -98,8 +98,8 @@
     //初始化各值
     protected override async Task OnInitializedAsync()
     {
-        leaveTypes = await leaveService.GetLeaveTypesAsync() ?? new List<LeaveType>();
-        leaveRecords = await leaveService.GetLeaveRecordByEIDAsync() ?? new List<LeaveRecordViewModel>();
+        leaveTypes = await leaveTypeService.GetAllDataAsync() ?? new List<LeaveType>();
+        leaveRecords = await leaveService.GetDataByEIDAsync() ?? new List<LeaveRecordViewModel>();
 
         if (leaveRecords.Count > 0 && leaveTypes.Count > 0)
         {
@@ -177,9 +177,11 @@
                     }
                     else
                     {
-                        string result = await leaveService.LeaveOnAsync(model);
-                        await JS.InvokeVoidAsync("alert", result);
-                        leaveRecords = await leaveService.GetLeaveRecordByEIDAsync() ?? new List<LeaveRecordViewModel>();
+                        ConfirmType = -1;
+                        ConfirmTitle = "請假確認";
+                        ConfirmMessage = await leaveService.LeaveOnAsync(model);
+                        LeaveConfirmation?.Alert();
+                        leaveRecords = await leaveService.GetDataByEIDAsync() ?? new List<LeaveRecordViewModel>();
 
                         if (leaveRecords.Count > 0 && leaveTypes.Count > 0)
                         {
@@ -201,9 +203,11 @@
                     }
                     else
                     {
-                        string result = await leaveService.LeaveOffAsync(SelectItem);
-                        await JS.InvokeVoidAsync("alert", result);
-                        leaveRecords = await leaveService.GetLeaveRecordByEIDAsync() ?? new List<LeaveRecordViewModel>();
+                        ConfirmType = -1;
+                        ConfirmTitle = "取消請假確認";
+                        ConfirmMessage = await leaveService.DeleteDataAsync(SelectItem);
+                        LeaveConfirmation?.Alert();
+                        leaveRecords = await leaveService.GetDataByEIDAsync() ?? new List<LeaveRecordViewModel>();
 
                         if (leaveRecords.Count > 0 && leaveTypes.Count > 0)
                         {

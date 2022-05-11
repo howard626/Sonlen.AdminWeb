@@ -11,11 +11,11 @@ namespace Sonlen.AdminWebAPI.Service
     {
         private readonly string connectString;
         private readonly IEmployeeService _employeeService;
-        private readonly IDataService<ResetPassword> _resetPasswordService;
+        private readonly IResetPasswordService _resetPasswordService;
 
         public LoginService(IConfiguration configuration,
             IEmployeeService employeeService,
-            IDataService<ResetPassword> resetPasswordService)
+            IResetPasswordService resetPasswordService)
         {
             connectString = configuration["ConnectionStrings:DefaultConnection"];
             _employeeService = employeeService;

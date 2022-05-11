@@ -9,40 +9,14 @@ namespace Sonlen.AdminWebAPI.Service
 {
     public class WorkOvertimeService : IWorkOvertimeService
     {
-        private readonly string connectString;
-
-        public WorkOvertimeService(IConfiguration configuration)
+        private readonly INoticeService _noticeService;
+        private readonly IWorkOvertimeRecordService _workOvertimeRecordService;
+        
+        public WorkOvertimeService(INoticeService noticeService
+            , IWorkOvertimeRecordService workOvertimeRecordService)
         {
-            connectString = configuration["ConnectionStrings:DefaultConnection"];
-        }
-
-        public IDbConnection Connection
-        {
-            get { return new SqlConnection(connectString); }
-        }
-
-        /** 取得全部加班紀錄*/
-        public IEnumerable<WorkOvertimeViewModel> GetAllWorkOvertime()
-        {
-            IEnumerable<WorkOvertimeViewModel> workOvertime;
-            using (var conn = new SqlConnection(connectString))
-            {
-                workOvertime = conn.Query<WorkOvertimeViewModel>("GetAllWorkOvertime", commandType: CommandType.StoredProcedure);
-            }
-            return workOvertime;
-        }
-
-        /** 從 EmployeeID 取得加班紀錄*/
-        public IEnumerable<WorkOvertime> GetWorkOvertimeByEID(string employeeID)
-        {
-            IEnumerable<WorkOvertime> workOvertime;
-            using (var conn = new SqlConnection(connectString))
-            {
-                DynamicParameters parameters = new DynamicParameters();
-                parameters.Add("@EmployeeID", employeeID, DbType.String);
-                workOvertime = conn.Query<WorkOvertime>("GetWorkOvertimeByEID", parameters, commandType: CommandType.StoredProcedure);
-            }
-            return workOvertime;
+            _noticeService = noticeService;
+            _workOvertimeRecordService = workOvertimeRecordService;
         }
 
         /** 申請加班*/
@@ -56,33 +30,36 @@ namespace Sonlen.AdminWebAPI.Service
             else
             {
                 using (TransactionScope transactionScope = new TransactionScope())
-                using (var conn = Connection)
                 {
-                    DynamicParameters parameters = new DynamicParameters();
-                    parameters.Add("@EmployeeID", overtime.EmployeeID, DbType.String);
-                    parameters.Add("@OverDate", overtime.OverDate, DbType.Date);
-
-                    WorkOvertime workOvertime = conn.QueryFirstOrDefault<WorkOvertime>("GetWorkOvertime", parameters, commandType: CommandType.StoredProcedure);
+                    WorkOvertime? workOvertime = _workOvertimeRecordService.GetDataByID($"{overtime.EmployeeID},{overtime.OverDate}");
                     if (workOvertime == null)
                     {
-                        parameters = new DynamicParameters();
-                        parameters.Add("@EmployeeID", Setting.LEAVE_APPROVED_ID, DbType.String);
-                        parameters.Add("@Content", $"{overtime.EmployeeName} 於 {overtime.OverDate:yyyy/MM/dd} 申請加班，請去審核是否核准。", DbType.String);
-                        parameters.Add("@CreateDate", DateTime.Now, DbType.DateTime);
-                        parameters.Add("@NoticeId", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
-                        conn.Execute("InsNotice", parameters, commandType: CommandType.StoredProcedure);
-                        int noticeId = parameters.Get<int>("@NoticeId");
-                        if (noticeId < 0)
+                        Notice notice = new Notice()
+                        {
+                            EmployeeID = Setting.LEAVE_APPROVED_ID,
+                            Content = $"{overtime.EmployeeName} 於 {overtime.OverDate:yyyy/MM/dd} 申請加班，請去審核是否核准。",
+                            CreateDate = DateTime.Now
+                        };
+                        string noticeId = _noticeService.InsertData(notice);
+                        if (noticeId.Equals("發生未知錯誤"))
                         {
                             result = -99;//未知錯誤
                             return result;
                         }
+
                         workOvertime = new WorkOvertime(overtime);
-                        workOvertime.NoticeId = noticeId;
-                        parameters = workOvertime.ToDynamicParameters();
-                        result = conn.Execute("InsWorkOvertime", parameters, commandType: CommandType.StoredProcedure);
-                        if (result > 0)
+                        workOvertime.NoticeId = int.Parse(noticeId);
+                        string msg = _workOvertimeRecordService.InsertData(workOvertime);
+                        if (string.IsNullOrWhiteSpace(msg))
+                        {
+                            result = 1;
                             transactionScope.Complete();
+                        }
+                        else
+                        {
+                            result = -99;//未知錯誤
+                            return result;
+                        }
                     }
                     else
                     {
@@ -103,12 +80,14 @@ namespace Sonlen.AdminWebAPI.Service
             }
             else
             {
-                using (var conn = Connection)
+                string msg = _workOvertimeRecordService.DeleteData(overtime);
+                if (string.IsNullOrWhiteSpace(msg))
                 {
-                    DynamicParameters parameters = new DynamicParameters();
-                    parameters.Add("@EmployeeID", overtime.EmployeeID, DbType.String);
-                    parameters.Add("@OverDate", overtime.OverDate, DbType.Date);
-                    result = conn.Execute("DelWorkOvertime", parameters, commandType: CommandType.StoredProcedure);
+                    result = 1;
+                }
+                else
+                {
+                    result = -99;//未知錯誤
                 }
             }
             return result;
@@ -119,20 +98,30 @@ namespace Sonlen.AdminWebAPI.Service
         {
             int result = 0;
             using (TransactionScope transactionScope = new TransactionScope())
-            using (var conn = new SqlConnection(connectString))
             {
-                DynamicParameters parameters = new DynamicParameters();
-                parameters.Add("@EmployeeID", overtime.EmployeeID, DbType.String);
-                parameters.Add("@OverDate", overtime.OverDate, DbType.Date);
-                result = conn.Execute("AgreeWorkOvertime", parameters, commandType: CommandType.StoredProcedure);
+                if (string.IsNullOrEmpty(_workOvertimeRecordService.Agree(overtime)))
+                {
+                    Notice notice = new Notice()
+                    {
+                        EmployeeID = overtime.EmployeeID,
+                        Content = $"管理員已同意您於{overtime.OverDate.ToTWDateString()}的申請加班。",
+                        CreateDate = DateTime.Now
+                    };
 
-                parameters = new DynamicParameters();
-                parameters.Add("@EmployeeID", overtime.EmployeeID, DbType.String);
-                parameters.Add("@Content", $"管理員已同意您於{overtime.OverDate.ToTWDateString()}的申請加班。", DbType.String);
-                parameters.Add("@CreateDate", DateTime.Now, DbType.DateTime);
-                conn.Execute("InsNotice", parameters, commandType: CommandType.StoredProcedure);
-
-                transactionScope.Complete();
+                    if (!"發生未知錯誤".Equals(_noticeService.InsertData(notice)))
+                    {
+                        result = 1;
+                        transactionScope.Complete();
+                    }
+                    else
+                    {
+                        result = -99;
+                    }
+                }
+                else
+                {
+                    result = -99;
+                }
             }
             return result;
         }
@@ -142,20 +131,30 @@ namespace Sonlen.AdminWebAPI.Service
         {
             int result = 0;
             using (TransactionScope transactionScope = new TransactionScope())
-            using (var conn = new SqlConnection(connectString))
             {
-                DynamicParameters parameters = new DynamicParameters();
-                parameters.Add("@EmployeeID", overtime.EmployeeID, DbType.String);
-                parameters.Add("@OverDate", overtime.OverDate, DbType.Date);
-                result = conn.Execute("DisagreeWorkOvertime", parameters, commandType: CommandType.StoredProcedure);
+                if (string.IsNullOrEmpty(_workOvertimeRecordService.Disagree(overtime)))
+                {
+                    Notice notice = new Notice()
+                    {
+                        EmployeeID = overtime.EmployeeID,
+                        Content = $"管理員已駁回您於{overtime.OverDate.ToTWDateString()}的申請加班。",
+                        CreateDate = DateTime.Now
+                    };
 
-                parameters = new DynamicParameters();
-                parameters.Add("@EmployeeID", overtime.EmployeeID, DbType.String);
-                parameters.Add("@Content", $"管理員已駁回您於{overtime.OverDate.ToTWDateString()}的申請加班。", DbType.String);
-                parameters.Add("@CreateDate", DateTime.Now, DbType.DateTime);
-                conn.Execute("InsNotice", parameters, commandType: CommandType.StoredProcedure);
-
-                transactionScope.Complete();
+                    if (!"發生未知錯誤".Equals(_noticeService.InsertData(notice)))
+                    {
+                        result = 1;
+                        transactionScope.Complete();
+                    }
+                    else
+                    {
+                        result = -99;
+                    }
+                }
+                else
+                {
+                    result = -99;
+                }
             }
             return result;
         }

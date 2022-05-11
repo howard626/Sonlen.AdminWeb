@@ -99,7 +99,7 @@
     {
         IsSubmit = true;
 
-        string result = await employeeService.AddEmployeeAsync(employee);
+        string result = await employeeService.AddDataAsync(employee);
         if (!string.IsNullOrEmpty(result))
         {
             await JS.InvokeVoidAsync("alert", result);

@@ -21,6 +21,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        employees = await employeeService.GetAllEmployeeAsync() ?? new List<Employee>();   
+        employees = await employeeService.GetAllDataAsync() ?? new List<Employee>();   
     }
 }

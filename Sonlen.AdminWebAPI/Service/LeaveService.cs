@@ -9,18 +9,20 @@ namespace Sonlen.AdminWebAPI.Service
 {
     public class LeaveService : ILeaveService
     {
-        private readonly string connectString;
+        private readonly ILeaveTypeService _leaveTypeService;
+        private readonly IFileService _fileService;
+        private readonly ILeaveRecordService _leaveRecordService;
+        private readonly INoticeService _noticeService;
 
-        public IFileService _fileService;
-        public LeaveService(IConfiguration configuration, IFileService fileService)
+        public LeaveService(ILeaveTypeService leaveTypeService
+            , IFileService fileService
+            , ILeaveRecordService leaveRecordService
+            , INoticeService noticeService)
         {
-            connectString = configuration["ConnectionStrings:DefaultConnection"];
             _fileService = fileService;
-        }
-
-        public IDbConnection Connection
-        {
-            get { return new SqlConnection(connectString); }
+            _leaveRecordService = leaveRecordService;
+            _leaveTypeService = leaveTypeService;
+            _noticeService = noticeService;
         }
 
         /** 請假*/
@@ -34,15 +36,10 @@ namespace Sonlen.AdminWebAPI.Service
             else
             {
                 using (TransactionScope transactionScope = new TransactionScope())
-                using (var conn = Connection)
                 {
                     if (leave.Employee != null)
                     {
-                        DynamicParameters parameters = new DynamicParameters();
-                        parameters.Add("@EmployeeID", leave.Employee.EmployeeID, DbType.String);
-                        parameters.Add("@LeaveDate", leave.LeaveDate, DbType.Date);
-
-                        LeaveRecord leaveRecord = conn.QueryFirstOrDefault<LeaveRecord>("GetLeaveRecord", parameters, commandType: CommandType.StoredProcedure);
+                        LeaveRecord? leaveRecord = _leaveRecordService.GetDataByID($"{leave.Employee.EmployeeID},{leave.LeaveDate}");
                         if (leaveRecord == null)
                         {
                             DateTime now = DateTime.Now;
@@ -53,18 +50,20 @@ namespace Sonlen.AdminWebAPI.Service
                             int hour = leaveEndHour - leaveStartHour;
                             int min = leaveEndMin - leaveStartMin;
 
-                            parameters = new DynamicParameters();
-                            parameters.Add("@EmployeeID", Setting.LEAVE_APPROVED_ID, DbType.String);
-                            parameters.Add("@Content", $"{leave.Employee.EmployeeName} 於 {leave.LeaveDate:yyyy/MM/dd} {leave.LeaveStartTime} ~ {leave.LeaveEndTime} 請 {GetLeaveType(leave.LeaveType).LeaveName}，請去審核是否准許。", DbType.String);
-                            parameters.Add("@CreateDate", DateTime.Now, DbType.DateTime);
-                            parameters.Add("@NoticeId", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
-                            conn.Execute("InsNotice", parameters, commandType: CommandType.StoredProcedure);
-                            int noticeId = parameters.Get<int>("@NoticeId");
-                            if (noticeId < 0)
+                            Notice notice = new Notice() 
+                            {
+                                EmployeeID = Setting.LEAVE_APPROVED_ID,
+                                Content = $"{leave.Employee.EmployeeName} 於 {leave.LeaveDate:yyyy/MM/dd} {leave.LeaveStartTime} ~ {leave.LeaveEndTime} 請 {_leaveTypeService.GetDataByID(leave.LeaveType.ToString())?.LeaveName}，請去審核是否准許。",
+                                CreateDate = DateTime.Now
+                            };
+                            
+                            string noticeId = _noticeService.InsertData(notice);
+                            if (noticeId.Equals("發生未知錯誤"))
                             {
                                 result = -99;//未知錯誤
                                 return result;
                             }
+                            
                             //如果有包含13點，減去午休的一小時
                             if (leaveEndHour > 13 && leaveStartHour < 13)
                             {
@@ -85,7 +84,7 @@ namespace Sonlen.AdminWebAPI.Service
                                 LeaveEndTime = $"{leave.LeaveEndTime.Substring(0, 2)}:{leave.LeaveEndTime.Substring(2, 2)}",
                                 Accept = 0,
                                 LeaveHour = leaveHour,
-                                NoticeId = noticeId
+                                NoticeId = int.Parse(noticeId)
                             };
                             if (leave.File != null)
                             {
@@ -94,10 +93,18 @@ namespace Sonlen.AdminWebAPI.Service
                                 _fileService.UploadFile(leave.File.FileContent ?? Array.Empty<byte>(), leave.File.FileName);
                                 leaveRecord.Prove = leave.File.FileName;
                             }
-                            parameters = leaveRecord.ToDynamicParameters();
-                            result = conn.Execute("LeaveOff", parameters, commandType: CommandType.StoredProcedure);
-                            if(result > 0)
+                            
+                            string msg = _leaveRecordService.InsertData(leaveRecord);
+                            if (string.IsNullOrWhiteSpace(msg))
+                            {
+                                result = 1;
                                 transactionScope.Complete();
+                            }
+                            else 
+                            { 
+                                result = -99;//未知錯誤
+                                return result;
+                            }
                         }
                         else
                         {
@@ -123,111 +130,78 @@ namespace Sonlen.AdminWebAPI.Service
             }
             else
             {
-                using (var conn = Connection)
+                string msg = _leaveRecordService.DeleteData(leave);
+                if (string.IsNullOrWhiteSpace(msg))
                 {
-                    DynamicParameters parameters = new DynamicParameters();
-                    parameters.Add("@EmployeeID", leave.EmployeeID, DbType.String);
-                    parameters.Add("@LeaveDate", leave.LeaveDate, DbType.Date);
-                    result = conn.Execute("DelLeaveRecord", parameters, commandType: CommandType.StoredProcedure);
+                    result = 1;
+                }
+                else
+                {
+                    result = -99;//未知錯誤
                 }
             }
             return result;
         }
 
-        /** 取得請假類別*/
-        public IEnumerable<LeaveType> GetLeaveTypes()
-        {
-            IEnumerable<LeaveType> leave;
-            using (var conn = new SqlConnection(connectString))
-            {
-                leave = conn.Query<LeaveType>("GetAllLeaveType", commandType: CommandType.StoredProcedure);
-            }
-            return leave;
-        }
-
-        /** 取得請假類別*/
-        public LeaveType GetLeaveType(int id)
-        {
-            LeaveType leave;
-            DynamicParameters parameters = new DynamicParameters();
-            parameters.Add("@Id", id, DbType.Int32);
-
-            using (var conn = new SqlConnection(connectString))
-            {
-                leave = conn.QueryFirstOrDefault<LeaveType>("GetLeaveTypeById", parameters, commandType: CommandType.StoredProcedure);
-
-            }
-            return leave;
-        }
-
-        /** 從 EmployeeID 取得請假紀錄*/
-        public IEnumerable<LeaveRecord> GetLeaveRecordByEID(string employeeID)
-        {
-            IEnumerable<LeaveRecord> leave;
-            using (var conn = new SqlConnection(connectString))
-            {
-                DynamicParameters parameters = new DynamicParameters();
-                parameters.Add("@EmployeeID", employeeID, DbType.String);
-                leave = conn.Query<LeaveRecord>("GetLeaveRecordByEID", parameters, commandType: CommandType.StoredProcedure);   
-            }
-            return leave;
-        }
-
-        /** 取得全部請假紀錄*/
-        public IEnumerable<LeaveRecordViewModel> GetAllLeaveRecord()
-        {
-            IEnumerable<LeaveRecordViewModel> leave;
-            using (var conn = new SqlConnection(connectString))
-            {
-                leave = conn.Query<LeaveRecordViewModel>("GetAllLeaveRecord", commandType: CommandType.StoredProcedure);
-            }
-            return leave;
-        }
-
         /** 同意請假*/
-        public int AgreeLeaveRecord(string employeeID, DateTime leaveDate)
+        public int AgreeLeaveRecord(LeaveRecord leave)
         {
-            int result = 0;
-            using (var conn = new SqlConnection(connectString))
-            {
-                DynamicParameters parameters = new DynamicParameters();
-                parameters.Add("@EmployeeID", employeeID, DbType.String);
-                parameters.Add("@LeaveDate", leaveDate, DbType.Date);
-                result = conn.Execute("AgreeLeaveRecord", parameters, commandType: CommandType.StoredProcedure);
+            int result;
 
-                parameters = new DynamicParameters();
-                parameters.Add("@EmployeeID", employeeID, DbType.String);
-                parameters.Add("@Content", $"管理員已同意您於{leaveDate.ToTWDateString()}的請假。", DbType.String);
-                parameters.Add("@CreateDate", DateTime.Now, DbType.DateTime);
-                conn.Execute("InsNotice", parameters, commandType: CommandType.StoredProcedure);
+            if (string.IsNullOrEmpty(_leaveRecordService.Agree(leave)))
+            {
+                Notice notice = new Notice()
+                {
+                    EmployeeID = leave.EmployeeID,
+                    Content = $"管理員已同意您於{leave.LeaveDate.ToTWDateString()}的請假。",
+                    CreateDate = DateTime.Now
+                };
+
+                if (!"發生未知錯誤".Equals(_noticeService.InsertData(notice)))
+                {
+                    result = 1;
+                }
+                else 
+                {
+                    result = -99;
+                }
             }
+            else 
+            {
+                result = -99;
+            }
+
             return result;
         }
 
         /** 駁回請假*/
-        public int DisagreeLeaveRecord(string employeeID, DateTime leaveDate)
+        public int DisagreeLeaveRecord(LeaveRecord leave)
         {
-            int result = 0;
-            using (var conn = new SqlConnection(connectString))
+            int result;
+            if (string.IsNullOrEmpty(_leaveRecordService.Disagree(leave)))
             {
-                DynamicParameters parameters = new DynamicParameters();
-                parameters.Add("@EmployeeID", employeeID, DbType.String);
-                parameters.Add("@LeaveDate", leaveDate, DbType.Date);
-                result = conn.Execute("DisagreeLeaveRecord", parameters, commandType: CommandType.StoredProcedure);
+                Notice notice = new Notice()
+                {
+                    EmployeeID = leave.EmployeeID,
+                    Content = $"管理員已駁回您於{leave.LeaveDate.ToTWDateString()}的請假。",
+                    CreateDate = DateTime.Now
+                };
 
-                parameters = new DynamicParameters();
-                parameters.Add("@EmployeeID", employeeID, DbType.String);
-                parameters.Add("@Content", $"管理員已駁回您於{leaveDate.ToTWDateString()}的請假。", DbType.String);
-                parameters.Add("@CreateDate", DateTime.Now, DbType.DateTime);
-                conn.Execute("InsNotice", parameters, commandType: CommandType.StoredProcedure);
+                if (!"發生未知錯誤".Equals(_noticeService.InsertData(notice)))
+                {
+                    result = 1;
+                }
+                else
+                {
+                    result = -99;
+                }
             }
+            else
+            {
+                result = -99;
+            }
+            
             return result;
-        }
-
-        /** 取得請假證明檔案*/
-        public UploadFile GetLeaveProve(UploadFile file)
-        {
-            return _fileService.DownloadFile(file.FileName);
-        }
+        }   
     }
 }

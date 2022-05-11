@@ -91,4 +91,40 @@ namespace Sonlen.WebAdmin.Model
         [Display(Description = "審核狀態")]
         public string AcceptDesc { get; set; } = string.Empty;
     }
+
+    /// <summary>
+    /// 請假資料
+    /// </summary>
+    public class LeaveViewModel
+    {
+        /// <summary>
+        /// 員工資料
+        /// </summary>
+        public Employee? Employee { get; set; }
+
+        /// <summary>
+        /// 請假日期
+        /// </summary>
+        public DateTime LeaveDate { get; set; } = DateTime.Now;
+
+        /// <summary>
+        /// 請假類別編號
+        /// </summary>
+        public int LeaveType { get; set; }
+
+        /// <summary>
+        /// 請假時間(起)
+        /// </summary>
+        public string LeaveStartTime { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 請假時間(迄)
+        /// </summary>
+        public string LeaveEndTime { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 請假證明
+        /// </summary>
+        public UploadFile? File { get; set; }
+    }
 }

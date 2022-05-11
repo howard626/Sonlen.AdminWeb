@@ -69,6 +69,10 @@ namespace Sonlen.AdminWebAPI.Service
             fs.Close();
         }
 
+        /// <summary>
+        /// 下載檔案
+        /// </summary>
+        /// <param name="fileName"></param>
         public UploadFile DownloadFile(string fileName)
         {
             UploadFile uploadFile = new UploadFile();

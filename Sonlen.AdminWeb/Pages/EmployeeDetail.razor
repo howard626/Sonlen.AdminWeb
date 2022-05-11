@@ -87,7 +87,7 @@ else
 
         if (!string.IsNullOrEmpty(id))
         {
-            employee = await employeeService.GetEmployeeAsync(id);
+            employee = await employeeService.GetDataByIDAsync(id);
             LoadingComplete = true;
 
             if (employee == null)
@@ -106,7 +106,7 @@ else
 
         if (employee != null)
         {
-            string result = await employeeService.UpdateEmployeeAsync(employee);
+            string result = await employeeService.UpdateDataAsync(employee);
             await JS.InvokeVoidAsync("alert", result);
         }
 
@@ -119,7 +119,7 @@ else
 
         if (employee != null)
         {
-            string result = await employeeService.DeleteEmployeeAsync(employee);
+            string result = await employeeService.DeleteDataAsync(employee);
             await JS.InvokeVoidAsync("alert", result);
 
             if ("刪除員工成功".Equals(result))

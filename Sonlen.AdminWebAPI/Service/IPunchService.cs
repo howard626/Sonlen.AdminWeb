@@ -5,8 +5,6 @@ namespace Sonlen.AdminWebAPI.Service
 {
     public interface IPunchService
     {
-        IDbConnection Connection { get; }
-
         /// <summary>
         /// 上班打卡
         /// </summary>

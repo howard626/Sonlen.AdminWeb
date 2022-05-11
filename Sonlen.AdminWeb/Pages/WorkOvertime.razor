@@ -1,7 +1,6 @@
 ﻿@page "/WorkOvertime"
 
 @inject IWorkOvertimeService workOvertimeService
-@inject IJSRuntime JS
 @attribute [Authorize]
 
 <h3>加班申請</h3>
@@ -61,7 +60,7 @@
 
 @code {
     //瀏覽請假頁面的 MODEL
-    private Sonlen.WebAdmin.Model.WorkOvertime model { get; set; } = new Sonlen.WebAdmin.Model.WorkOvertime();
+    private WorkOvertimeViewModel model { get; set; } = new WorkOvertimeViewModel();
 
     //登入人員曾經的加班紀錄
     private List<WorkOvertimeViewModel> OverTimes = new List<WorkOvertimeViewModel>();
@@ -87,7 +86,7 @@
     //初始化各值
     protected override async Task OnInitializedAsync()
     {
-        OverTimes = await workOvertimeService.GetOvertimeRecordByEIDAsync() ?? new List<WorkOvertimeViewModel>();
+        OverTimes = await workOvertimeService.GetDataByEIDAsync() ?? new List<WorkOvertimeViewModel>();
         if (OverTimes.Count > 0)
         {
             OverTimes.Init();
@@ -153,9 +152,11 @@
             case 1:
                 if (confirmed)
                 {
-                    string result = await workOvertimeService.AddWorkOvertimeAsync(model);
-                    await JS.InvokeVoidAsync("alert", result);
-                    OverTimes =  await workOvertimeService.GetOvertimeRecordByEIDAsync() ?? new List<WorkOvertimeViewModel>();
+                    ConfirmType = -1;
+                    ConfirmMessage = await workOvertimeService.AddDataAsync(model);
+                    ConfirmTitle = "請假確認";
+                    Confirmation?.Alert();
+                    OverTimes =  await workOvertimeService.GetDataByEIDAsync() ?? new List<WorkOvertimeViewModel>();
                     if (OverTimes.Count > 0)
                     {
                         OverTimes.Init();
@@ -168,9 +169,11 @@
                 {
                     if (SelectItem != null)
                     {
-                        string result = await workOvertimeService.CancelWorkOvertimeAsync(SelectItem);
-                        await JS.InvokeVoidAsync("alert", result);
-                        OverTimes = await workOvertimeService.GetOvertimeRecordByEIDAsync() ?? new List<WorkOvertimeViewModel>();
+                        ConfirmType = -1;
+                        ConfirmMessage = await workOvertimeService.DeleteDataAsync(model);
+                        ConfirmTitle = "取消請假確認";
+                        Confirmation?.Alert();
+                        OverTimes = await workOvertimeService.GetDataByEIDAsync() ?? new List<WorkOvertimeViewModel>();
                         if (OverTimes.Count > 0)
                         {
                             OverTimes.Init();
