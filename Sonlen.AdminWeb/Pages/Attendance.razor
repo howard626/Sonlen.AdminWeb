@@ -1,30 +1,41 @@
 ﻿@page "/Attendance"
 
 @inject IEmployeeService employeeService
+@inject IAttendanceService attendanceService
 @inject IJSRuntime JS
 @attribute [Authorize(Roles = "admin")]
 
 <h3>員工列表</h3>
-<a href="/Employee/Add"> Add Employee</a>
 
 @if (employees.Count != 0)
 {
     <GridAutoComponent Items="employees"
-                       ColumnsToShow="EmployeeID,EmployeeName,ArrivalDate,Birthday,CellPhone"
-                       ColumnToLink="EmployeeID"
+                       ColumnsToShow="EmployeeName,ArrivalDate,Birthday,CellPhone"
                        UseSearch="true"
-                       Row = "5"
-                       Link="Employee"></GridAutoComponent>
+                       Row = "5"></GridAutoComponent>
 }
 
+<input type="text" @bind-value="@model.Year" @bind-value:event="oninput" /> 年
+<input type="text" @bind-value="@model.Month" @bind-value:event="oninput" /> 月
 <button class="btn btn-success" @onclick="PrintAtt" disabled="@IsLoading">列印考勤</button>
+
+
+<ConfirmComponent @ref="Confirmation"
+         ConfirmationTitle=@(ConfirmTitle)
+         ConfirmationMessage=@(ConfirmMessage)>
+</ConfirmComponent>
 
 @code {
     //初始化各值
     protected override async Task OnInitializedAsync()
     {
-        employees = await employeeService.GetAllDataAsync() ?? new List<Employee>();   
+        employees = await employeeService.GetAllDataAsync() ?? new List<Employee>();
+        model.Year = DateTime.Now.Year - 1911;
+        model.Month = DateTime.Now.Month;
     }
+
+    //列印參數
+    private AttendanceViewModel model = new AttendanceViewModel();
 
     //員工列表
     private List<Employee> employees = new List<Employee>();
@@ -35,6 +46,15 @@
     //選擇的員工
     private Employee? SelectItem;
 
+    // CONFIRM 視窗
+    protected ConfirmComponent? Confirmation { get; set; }
+
+    // CONFIRM 視窗標題
+    private string ConfirmTitle { get; set; } = string.Empty;
+
+    // CONFIRM 視窗訊息
+    private string ConfirmMessage { get; set; } = string.Empty;
+
     //設定選擇的加班紀錄
     protected void SelectRow(string json)
     {
@@ -44,13 +64,32 @@
     //列印考勤
     protected async void PrintAtt()
     {
+        if (model.Month > 12 || model.Month < 1 || model.Year < 1)
+    {
+            ConfirmTitle = "列印失敗";
+            ConfirmMessage = "請輸入正確的日期";
+            Confirmation?.Alert();
+            return;
+        }
         if (SelectItem != null)
         {
-            
+            model.EmployeeID = SelectItem.EmployeeID;   
+        }
+        UploadFile file = await attendanceService.PrintAsync(model);
+        if (!string.IsNullOrEmpty(file.FileName))
+        {
+            string ext = Path.GetExtension(file.FileName);
+
+            var fileStream = new MemoryStream(file.FileContent ?? new byte[0]);
+            using var streamRef = new DotNetStreamReference(stream: fileStream);
+
+            await JS.InvokeVoidAsync("downloadFileFromStream", file.FileName, streamRef);
         }
         else
         {
-            await JS.InvokeVoidAsync("alert", "請選擇要列印的資料");
+            ConfirmTitle = "列印失敗";
+            ConfirmMessage = "發生未知錯誤";
+            Confirmation?.Alert();
         }
     }
 }

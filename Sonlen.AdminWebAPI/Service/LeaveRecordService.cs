@@ -139,5 +139,55 @@ namespace Sonlen.AdminWebAPI.Service
             }
             return leave;
         }
+
+        public IEnumerable<LeaveRecord> GetDatasByDate(AttendanceViewModel model)
+        {
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@EmployeeID", model.EmployeeID, DbType.String);
+            parameters.Add("@StartDate", new DateTime(model.Year + 1911, model.Month, 1), DbType.Date);
+            parameters.Add("@EndDate", new DateTime(model.Year + 1911, model.Month, 1).AddMonths(1).AddDays(-1), DbType.Date);
+
+            using (var conn = new SqlConnection(connectString))
+            {
+                return conn.Query<LeaveRecord>("GetLeaveRecordByDate", parameters, commandType: CommandType.StoredProcedure);
+            }
+        }
+
+        public IEnumerable<LeaveRecord> GetDatasByYear(int year, string? employeeID = null)
+        {
+            DynamicParameters parameters = new DynamicParameters();
+            if (!string.IsNullOrEmpty(employeeID))
+            {
+                parameters.Add("@EmployeeID", employeeID, DbType.String);
+            }
+            parameters.Add("@StartDate", new DateTime(year + 1911, 1, 1), DbType.Date);
+            parameters.Add("@EndDate", new DateTime(year + 1912, 1, 1).AddDays(-1), DbType.Date);
+
+            using (var conn = new SqlConnection(connectString))
+            {
+                return conn.Query<LeaveRecord>("GetLeaveRecordByDate", parameters, commandType: CommandType.StoredProcedure);
+            }
+        }
+
+        public decimal GetSumHourByID(int typeID ,int year = 0, string? employeeID = null)
+        {
+            if (year == 0)
+            {
+                year = DateTime.Now.Year - 1911;
+            }
+            DynamicParameters parameters = new DynamicParameters();
+            if (!string.IsNullOrEmpty(employeeID))
+            {
+                parameters.Add("@EmployeeID", employeeID, DbType.String);
+            }
+            parameters.Add("@TypeID", typeID, DbType.Int32);
+            parameters.Add("@StartDate", new DateTime(year + 1911, 1, 1), DbType.Date);
+            parameters.Add("@EndDate", new DateTime(year + 1912, 1, 1).AddDays(-1), DbType.Date);
+
+            using (var conn = new SqlConnection(connectString))
+            {
+                return conn.QueryFirstOrDefault<decimal>("GetSumLeaveHourByID", parameters, commandType: CommandType.StoredProcedure);
+            }
+        }
     }
 }

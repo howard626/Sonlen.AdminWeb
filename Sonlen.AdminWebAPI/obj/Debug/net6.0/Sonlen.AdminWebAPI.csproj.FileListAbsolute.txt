@@ -160,3 +160,7 @@ C:\Users\USER\Documents\GitHub\Sonlen.AdminWeb\Sonlen.AdminWebAPI\obj\Debug\net6
 C:\Users\USER\Documents\GitHub\Sonlen.AdminWeb\Sonlen.AdminWebAPI\obj\Debug\net6.0\ref\Sonlen.AdminWebAPI.dll
 C:\Users\USER\Documents\GitHub\Sonlen.AdminWeb\Sonlen.AdminWebAPI\obj\Debug\net6.0\Sonlen.AdminWebAPI.pdb
 C:\Users\USER\Documents\GitHub\Sonlen.AdminWeb\Sonlen.AdminWebAPI\obj\Debug\net6.0\Sonlen.AdminWebAPI.genruntimeconfig.cache
+C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.AdminWebAPI\bin\Debug\net6.0\EPPlus.dll
+C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.AdminWebAPI\bin\Debug\net6.0\EPPlus.Interfaces.dll
+C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.AdminWebAPI\bin\Debug\net6.0\EPPlus.System.Drawing.dll
+C:\Users\USER\source\repos\Sonlen.AdminWeb\Sonlen.AdminWebAPI\bin\Debug\net6.0\Microsoft.IO.RecyclableMemoryStream.dll

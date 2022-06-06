@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Sonlen.AdminWeb.Service
 {
-    public class AttendanceService
+    public class AttendanceService : IAttendanceService
     {
         private readonly HttpClient httpClient;
         private readonly string API_ADDRESS = $"{Setting.API_ADDRESS}Attendance/";
@@ -15,15 +15,21 @@ namespace Sonlen.AdminWeb.Service
         }
 
         /** 列印考勤*/
-        public async Task<string> UpdateEmployeeAsync(Employee employee)
+        public async Task<UploadFile> PrintAsync(AttendanceViewModel model)
         {
-            var json = JsonConvert.SerializeObject(employee);
+            UploadFile? uploadFile = null;
+
+            var json = JsonConvert.SerializeObject(model);
             HttpContent httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await httpClient.PostAsync($"{API_ADDRESS}Print", httpContent);
 
-            var response = await httpClient.PostAsync($"{API_ADDRESS}Update", httpContent);
-            var result = await response.Content.ReadAsStringAsync();
+            var resContent = await response.Content.ReadAsStringAsync();
+            if (response.IsSuccessStatusCode)
+            {
+                uploadFile = JsonConvert.DeserializeObject<UploadFile>(resContent);
+            }
 
-            return result;
+            return uploadFile ?? new UploadFile();
         }
     }
 }
