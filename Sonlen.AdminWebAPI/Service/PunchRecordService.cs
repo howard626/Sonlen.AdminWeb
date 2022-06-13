@@ -56,6 +56,11 @@ namespace Sonlen.AdminWebAPI.Service
             return leave;
         }
 
+        /// <summary>
+        /// 以 PK 取得資料(以,區分各欄位(員工身分證,打卡日期))
+        /// </summary>
+        /// <param name="pks">pks = 員工身分證,打卡日期</param>
+        /// <returns></returns>
         public Punch? GetDataByID(string pks)
         {
             string[] pk = pks.Split(',');

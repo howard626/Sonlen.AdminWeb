@@ -19,12 +19,12 @@ namespace Sonlen.WebAdmin.Model
             EmployeeID = model.EmployeeID;
             Mon_Day = model.Mon_Day;
             Set_Day = model.Set_Day;
-            Thing_Day_Total = model.Thing_Day_Total;
-            Thing_Day = model.Thing_Day;
-            Sick_Day = model.Sick_Day;
-            Sick_Day_NoPay = model.Sick_Day_NoPay;
-            Sick_Day_Pay =  model.Sick_Day_Pay;
-            Sick_Day_Total = model.Sick_Day_Total;
+            Thing_Hour_Total = model.Thing_Hour_Total;
+            Thing_Hour = model.Thing_Hour;
+            Sick_Hour = model.Sick_Hour;
+            Sick_Hour_NoPay = model.Sick_Hour_NoPay;
+            Sick_Hour_Pay =  model.Sick_Hour_Pay;
+            Sick_Hour_Total = model.Sick_Hour_Total;
         }
 
         /// <summary>
@@ -43,34 +43,34 @@ namespace Sonlen.WebAdmin.Model
         public int Set_Day { get; set; }
 
         /// <summary>
-        /// 當年度事假天數
+        /// 當年度事假時數
         /// </summary>
-        public decimal Thing_Day_Total { get; set; }
+        public decimal Thing_Hour_Total { get; set; }
 
         /// <summary>
-        /// 當月事假天數
+        /// 當月事假時數
         /// </summary>        
-        public decimal Thing_Day { get; set; }
+        public decimal Thing_Hour { get; set; }
 
         /// <summary>
-        /// 當年度病假天數
+        /// 當年度病假時數
         /// </summary>
-        public decimal Sick_Day_Total { get; set; }
+        public decimal Sick_Hour_Total { get; set; }
 
         /// <summary>
-        /// 當月病假天數
+        /// 當月病假時數
         /// </summary>
-        public decimal Sick_Day { get; set; }
+        public decimal Sick_Hour { get; set; }
 
         /// <summary>
-        /// 當月半薪病假天數
+        /// 當月半薪病假時數
         /// </summary>
-        public decimal Sick_Day_Pay { get; set; }
+        public decimal Sick_Hour_Pay { get; set; }
 
         /// <summary>
-        /// 當月不給薪病假天數
+        /// 當月不給薪病假時數
         /// </summary>
-        public decimal Sick_Day_NoPay { get; set; }
+        public decimal Sick_Hour_NoPay { get; set; }
 
         /// <summary>
         /// 當月月份
@@ -114,40 +114,40 @@ namespace Sonlen.WebAdmin.Model
         public int Set_Day { get; set; }
 
         /// <summary>
-        /// 當年度事假天數
+        /// 當年度事假時數
         /// </summary>
-        [Display(Description = "當年度事假天數")]
-        public decimal Thing_Day_Total { get; set; }
+        [Display(Description = "當年度事假時數")]
+        public decimal Thing_Hour_Total { get; set; }
 
         /// <summary>
-        /// 當月事假天數
+        /// 當月事假時數
         /// </summary>
-        [Display(Description = "當月事假天數")]
-        public decimal Thing_Day { get; set; }
+        [Display(Description = "當月事假時數")]
+        public decimal Thing_Hour { get; set; }
 
         /// <summary>
-        /// 當年度病假天數
+        /// 當年度病假時數
         /// </summary>
-        [Display(Description = "當年度病假天數")]
-        public decimal Sick_Day_Total { get; set; }
+        [Display(Description = "當年度病假時數")]
+        public decimal Sick_Hour_Total { get; set; }
 
         /// <summary>
-        /// 當月病假天數
+        /// 當月病假時數
         /// </summary>
-        [Display(Description = "當月病假天數")]
-        public decimal Sick_Day { get; set; }
+        [Display(Description = "當月病假時數")]
+        public decimal Sick_Hour { get; set; }
 
         /// <summary>
-        /// 當月半薪病假天數
+        /// 當月半薪病假時數
         /// </summary>
-        [Display(Description = "當月半薪病假天數")]
-        public decimal Sick_Day_Pay { get; set; }
+        [Display(Description = "當月半薪病假時數")]
+        public decimal Sick_Hour_Pay { get; set; }
 
         /// <summary>
-        /// 當月不給薪病假天數
+        /// 當月不給薪病假時數
         /// </summary>
-        [Display(Description = "當月不給薪病假天數")]
-        public decimal Sick_Day_NoPay { get; set; }
+        [Display(Description = "當月不給薪病假時數")]
+        public decimal Sick_Hour_NoPay { get; set; }
     }
 
 

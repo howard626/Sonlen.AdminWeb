@@ -285,6 +285,19 @@
         }
     }
 
+    //取得選擇資料
+    public TItem? GetSelectItem()
+    {
+        return Item;
+    }
+
+    //取消選擇資料
+    public void ResetSelectItem()
+    {
+        Item = default(TItem);
+        StateHasChanged();
+    }
+
     #region 分頁功能
 
     //現在的頁數

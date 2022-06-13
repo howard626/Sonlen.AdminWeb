@@ -21,6 +21,7 @@ builder.Services.AddScoped<ILeaveRecordService, LeaveRecordService>();
 builder.Services.AddScoped<ILeaveTypeService, LeaveTypeService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IPunchService, PunchService>();
+builder.Services.AddScoped<ISalaryService, SalaryService>();
 builder.Services.AddScoped<IWorkOvertimeService, WorkOvertimeService>();
 
 await builder.Build().RunAsync();

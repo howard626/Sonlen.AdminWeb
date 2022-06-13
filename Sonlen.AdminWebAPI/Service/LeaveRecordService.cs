@@ -53,6 +53,11 @@ namespace Sonlen.AdminWebAPI.Service
             return leave;
         }
 
+        /// <summary>
+        /// 以 PK 取得資料(以,區分各欄位(員工身分證,請假日期))
+        /// </summary>
+        /// <param name="pks">pks = 員工身分證,請假日期</param>
+        /// <returns></returns>
         public LeaveRecord? GetDataByID(string pks)
         {
             string[] pk = pks.Split(',');
@@ -187,6 +192,19 @@ namespace Sonlen.AdminWebAPI.Service
             using (var conn = new SqlConnection(connectString))
             {
                 return conn.QueryFirstOrDefault<decimal>("GetSumLeaveHourByID", parameters, commandType: CommandType.StoredProcedure);
+            }
+        }
+
+        public decimal GetSumSLHourByDate(DateTime startDate, DateTime endDate, string employeeID)
+        {   
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@EmployeeID", employeeID, DbType.String);
+            parameters.Add("@StartDate", startDate, DbType.Date);
+            parameters.Add("@EndDate", endDate, DbType.Date);
+
+            using (var conn = new SqlConnection(connectString))
+            {
+                return conn.QueryFirstOrDefault<decimal>("GetSumSLHourByDate", parameters, commandType: CommandType.StoredProcedure);
             }
         }
     }

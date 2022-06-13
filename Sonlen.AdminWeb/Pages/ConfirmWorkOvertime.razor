@@ -173,7 +173,7 @@
                 {
                     if (SelectItem != null)
                     {
-                        ConfirmMessage = await workOvertimeService.AgreeAsync(SelectItem);
+                        ConfirmMessage = await workOvertimeService.DisagreeAsync(SelectItem);
                         ConfirmTitle = "審核結果";
                         ConfirmType = -1;
                         Confirmation?.Alert();

@@ -1,0 +1,170 @@
+﻿@page "/Salary"
+
+@inject IEmployeeService employeeService
+@inject ISalaryService salaryService
+@inject IJSRuntime JS
+@attribute [Authorize(Roles = "admin")]
+
+<h3>員工列表</h3>
+
+@if (employees.Count != 0)
+{
+    <GridAutoComponent @ref="EmployeeGrid" 
+                       SelectRowEvent="SelectRow" 
+                       Items="employees"
+                       ColumnsToShow="EmployeeName,ArrivalDate,Birthday,CellPhone"
+                       UseSearch="true"
+                       Row = "5"></GridAutoComponent>
+}
+
+<input type="text" @bind-value="@model.Year" @bind-value:event="onchange" /> 年
+<input type="text" @bind-value="@model.Month" @bind-value:event="onchange" /> 月
+<br />
+本月薪水：
+<input type="text" @bind-value="@model.Pay" @bind-value:event="onchange" />
+<br />
+匯款帳戶：
+<input type="text" @bind-value="@model.Account" @bind-value:event="onchange" />
+<br />
+負責專案名稱：
+<input type="text" @bind-value="@model.ProjectName" @bind-value:event="onchange" />
+<br />
+年終獎金(月)：
+<input type="text" @bind-value="@model.Year_End" @bind-value:event="onchange" />
+<br />
+駐點獎金：
+<input type="text" @bind-value="@model.Stay" @bind-value:event="onchange" />
+<br />
+專案獎金：
+<input type="text" @bind-value="@model.Project" @bind-value:event="onchange" />
+<br />
+代扣勞保費：
+<input type="text" @bind-value="@model.Labor" @bind-value:event="onchange" />
+<br />
+代扣健保費：
+<input type="text" @bind-value="@model.Health" @bind-value:event="onchange" />
+<br />
+<button class="btn btn-success" @onclick="PrintAtt" disabled="@IsLoading">列印薪資</button>
+<button class="btn btn-secondary" @onclick="Clear" disabled="@IsLoading">清除</button>
+
+<ConfirmComponent @ref="Confirmation"
+         ConfirmationTitle=@(ConfirmTitle)
+         ConfirmationMessage=@(ConfirmMessage)>
+</ConfirmComponent>
+
+@code {
+    //初始化各值
+    protected override async Task OnInitializedAsync()
+    {
+        employees = await employeeService.GetAllDataAsync() ?? new List<Employee>();
+        model.Year = DateTime.Now.Year - 1911;
+        model.Month = DateTime.Now.Month;
+    }
+
+    //列印參數
+    private SalaryViewModel model = new SalaryViewModel();
+
+    //員工列表
+    private List<Employee> employees = new List<Employee>();
+
+    //是否在讀取資料
+    private bool IsLoading { get; set; } = false;
+
+    // 員工表格
+    protected GridAutoComponent<Employee>? EmployeeGrid { get; set; }
+
+    //選擇的員工
+    private Employee? SelectItem;
+
+    // CONFIRM 視窗
+    protected ConfirmComponent? Confirmation { get; set; }
+
+    // CONFIRM 視窗標題
+    private string ConfirmTitle { get; set; } = string.Empty;
+
+    // CONFIRM 視窗訊息
+    private string ConfirmMessage { get; set; } = string.Empty;
+
+    //設定選擇的員工資料
+    protected void SelectRow(string json)
+    {
+        //SelectItem = Newtonsoft.Json.JsonConvert.DeserializeObject<Employee>(json);
+        SelectItem = EmployeeGrid?.GetSelectItem();
+        if (SelectItem != null)
+        {
+            model.EmployeeID = SelectItem.EmployeeID;
+            SetSalary();
+        }
+    }
+
+    //顯示上月薪資資料
+    protected async void SetSalary()
+    { 
+        SalaryViewModel? temp = await salaryService.GetDataByModelAsync(model);
+        if (temp != null)
+        {
+            int year = model.Year, mon = model.Month;
+            model = temp;
+            model.Year = year;
+            model.Month = mon;
+            StateHasChanged();
+        }
+    }
+
+    //列印考勤
+    protected async void PrintAtt()
+    {
+        if (model.Month > 12 || model.Month < 1 || model.Year < 1)
+        {
+            ConfirmTitle = "列印失敗";
+            ConfirmMessage = "請輸入正確的日期";
+            Confirmation?.Alert();
+            return;
+        }
+        if (SelectItem != null)
+        {
+            model.EmployeeID = SelectItem.EmployeeID;   
+            UploadFile file = await salaryService.PrintAsync(model);
+            if (file.FileContent != null)
+            {
+                string ext = Path.GetExtension(file.FileName);
+
+                var fileStream = new MemoryStream(file.FileContent);
+                using var streamRef = new DotNetStreamReference(stream: fileStream);
+
+                await JS.InvokeVoidAsync("downloadFileFromStream", file.FileName, streamRef);
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(file.FileName))
+                {
+                    ConfirmTitle = "列印失敗";
+                    ConfirmMessage = file.FileName;
+                    Confirmation?.Alert();
+                }
+                else
+                {
+                    ConfirmTitle = "列印失敗";
+                    ConfirmMessage = "發生未知錯誤";
+                    Confirmation?.Alert();
+                }
+            }
+        }
+        else
+        {
+            ConfirmTitle = "列印失敗";
+            ConfirmMessage = "請選擇要列印薪資表的員工";
+            Confirmation?.Alert();
+        }
+
+    }
+
+    //清除資料
+    protected void Clear()
+    {
+        EmployeeGrid?.ResetSelectItem();
+        model = new SalaryViewModel();
+        model.Year = DateTime.Now.Year - 1911;
+        model.Month = DateTime.Now.Month;
+    }
+}

@@ -17,5 +17,29 @@ namespace Sonlen.AdminWebAPI.Service
         /// <param name="eid"></param>
         /// <returns></returns>
         IEnumerable<WorkOvertime> GetDatasByEID(string eid);
+
+        /// <summary>
+        /// 以年月取得當月加班1.33時數
+        /// </summary>
+        /// <param name="employeeID"></param>
+        /// <param name="logMon"></param>
+        /// <returns></returns>
+        decimal GetSum133HourByDate(string employeeID, string logMon);
+
+        /// <summary>
+        /// 以年月取得當月加班1.66時數
+        /// </summary>
+        /// <param name="employeeID"></param>
+        /// <param name="logMon"></param>
+        /// <returns></returns>
+        decimal GetSum166HourByDate(string employeeID, string logMon);
+
+        /// <summary>
+        /// 以年月取得當月加班2.00時數
+        /// </summary>
+        /// <param name="employeeID"></param>
+        /// <param name="logMon"></param>
+        /// <returns></returns>
+        decimal GetSum200HourByDate(string employeeID, string logMon);
     }
 }

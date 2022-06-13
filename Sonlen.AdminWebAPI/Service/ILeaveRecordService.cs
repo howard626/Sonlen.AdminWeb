@@ -37,6 +37,15 @@ namespace Sonlen.AdminWebAPI.Service
         decimal GetSumHourByID(int typeID, int year = 0, string? employeeID = null);
 
         /// <summary>
+        /// 以員工 ID 取得當年度總請特別休假時數
+        /// </summary>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <param name="employeeID"></param>
+        /// <returns></returns>
+        decimal GetSumSLHourByDate(DateTime startDate, DateTime endDate, string employeeID);
+
+        /// <summary>
         /// 取得全部資料(包含名字)
         /// </summary>
         /// <returns></returns>

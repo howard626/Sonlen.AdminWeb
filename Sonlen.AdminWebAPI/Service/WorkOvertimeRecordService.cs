@@ -50,6 +50,11 @@ namespace Sonlen.AdminWebAPI.Service
             return leave;
         }
 
+        /// <summary>
+        /// 以 PK 取得資料(以,區分各欄位(員工身分證,加班日期))
+        /// </summary>
+        /// <param name="pks">pks = 員工身分證,加班日期</param>
+        /// <returns></returns>
         public WorkOvertime? GetDataByID(string pks)
         {
             string[] pk = pks.Split(',');
@@ -135,6 +140,46 @@ namespace Sonlen.AdminWebAPI.Service
                 item = conn.Query<WorkOvertimeViewModel>("GetAllWorkOvertime", commandType: CommandType.StoredProcedure);
             }
             return item;
+        }
+
+        public decimal GetSum133HourByDate(string employeeID, string logMon)
+        {
+            
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@EmployeeID", employeeID, DbType.String);
+            parameters.Add("@StartDate", (logMon + "01").TWDateStringToDate(), DbType.Date);
+            parameters.Add("@EndDate", (logMon + "01").TWDateStringToDate().AddMonths(1).AddDays(-1), DbType.Date);
+
+            using (var conn = new SqlConnection(connectString))
+            {
+                return conn.QueryFirstOrDefault<decimal>("GetSum133HourByDate", parameters, commandType: CommandType.StoredProcedure);
+            }
+        }
+
+        public decimal GetSum166HourByDate(string employeeID, string logMon)
+        {
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@EmployeeID", employeeID, DbType.String);
+            parameters.Add("@StartDate", (logMon + "01").TWDateStringToDate(), DbType.Date);
+            parameters.Add("@EndDate", (logMon + "01").TWDateStringToDate().AddMonths(1).AddDays(-1), DbType.Date);
+
+            using (var conn = new SqlConnection(connectString))
+            {
+                return conn.QueryFirstOrDefault<decimal>("GetSum166HourByDate", parameters, commandType: CommandType.StoredProcedure);
+            }
+        }
+
+        public decimal GetSum200HourByDate(string employeeID, string logMon)
+        {
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@EmployeeID", employeeID, DbType.String);
+            parameters.Add("@StartDate", (logMon + "01").TWDateStringToDate(), DbType.Date);
+            parameters.Add("@EndDate", (logMon + "01").TWDateStringToDate().AddMonths(1).AddDays(-1), DbType.Date);
+
+            using (var conn = new SqlConnection(connectString))
+            {
+                return conn.QueryFirstOrDefault<decimal>("GetSum200HourByDate", parameters, commandType: CommandType.StoredProcedure);
+            }
         }
 
         #region 未實作項目

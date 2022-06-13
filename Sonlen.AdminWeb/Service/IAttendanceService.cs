@@ -2,13 +2,7 @@
 
 namespace Sonlen.AdminWeb.Service
 {
-    public interface IAttendanceService
+    public interface IAttendanceService :IPrintService<AttendanceViewModel>
     {
-        /// <summary>
-        /// 列印考勤
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        Task<UploadFile> PrintAsync(AttendanceViewModel model);
     }
 }

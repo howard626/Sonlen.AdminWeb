@@ -19,6 +19,6 @@ namespace Sonlen.WebAdmin.Model
         /// <summary>
         /// 檔案內容
         /// </summary>
-        public byte[]? FileContent { get; set; }
+        public byte[]? FileContent { get; set; } = null;
     }
 }

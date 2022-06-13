@@ -3,13 +3,10 @@ using System.Data;
 
 namespace Sonlen.AdminWebAPI.Service
 {
-    public interface IAttendanceService: IDataService<Attendance>
+    /// <summary>
+    /// 考勤資料
+    /// </summary>
+    public interface IAttendanceService: IDataService<Attendance>, IPrintService<AttendanceViewModel,AttendancePrintModel>
     {
-        /// <summary>
-        /// 列印考勤資料
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        UploadFile Print(AttendanceViewModel model);
     }
 }

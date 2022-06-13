@@ -54,6 +54,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<ILeaveRecordService, LeaveRecordService>();
@@ -64,6 +65,7 @@ builder.Services.AddScoped<INoticeService, NoticeService>();
 builder.Services.AddScoped<IPunchService, PunchService>();
 builder.Services.AddScoped<IPunchRecordService, PunchRecordService>();
 builder.Services.AddScoped<IResetPasswordService, ResetPasswordService>();
+builder.Services.AddScoped<ISalaryService, SalaryService>();
 builder.Services.AddScoped<IWorkOvertimeService, WorkOvertimeService>();
 builder.Services.AddScoped<IWorkOvertimeRecordService, WorkOvertimeRecordService>();
 

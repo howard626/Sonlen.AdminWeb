@@ -52,6 +52,11 @@ namespace Sonlen.AdminWebAPI.Service
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// 以 PK 取得資料(以,區分各欄位(員工身分證,考勤年月))
+        /// </summary>
+        /// <param name="pks">pks = 員工身分證,考勤年月</param>
+        /// <returns></returns>
         public Attendance? GetDataByID(string pks)
         {
             string[] pk = pks.Split(',');
@@ -130,7 +135,6 @@ namespace Sonlen.AdminWebAPI.Service
                     };
                     model.EmployeeID = employee.EmployeeID;
                     List<LeaveRecord> leaveRecords_Mon = _leaveRecordService.GetDatasByDate(model).ToList();
-                    decimal thing_Hr = 0, sick_Hr_Pay = 0, sick_Hr_NoPay = 0;
                     foreach (LeaveRecord leaveRecord in leaveRecords_Mon)
                     {
                         switch (leaveRecord.LeaveType)
@@ -139,28 +143,24 @@ namespace Sonlen.AdminWebAPI.Service
                             case 25:
                             //普通傷病假(住院(30天以內))
                             case 27:
-                                sick_Hr_Pay += leaveRecord.LeaveHour ?? 0;
+                                item.Sick_Hour_Pay += leaveRecord.LeaveHour ?? 0;
                                 break;
                             //普通傷病假(住院(30天以上))
                             case 26:
-                                sick_Hr_NoPay += leaveRecord.LeaveHour ?? 0;
+                                item.Sick_Hour_NoPay += leaveRecord.LeaveHour ?? 0;
                                 break;
                             //事假
                             case 30:
-                                thing_Hr += leaveRecord.LeaveHour ?? 0;
+                                item.Thing_Hour += leaveRecord.LeaveHour ?? 0;
                                 break;
                         }
 
                     }
-                    //小時轉天數
-                    item.Thing_Day = Decimal.Round(thing_Hr / 8, 1);
-                    item.Sick_Day_Pay = Decimal.Round(sick_Hr_Pay / 8, 1);
-                    item.Sick_Day_NoPay = Decimal.Round(sick_Hr_NoPay / 8, 1);
-                    item.Sick_Day = item.Sick_Day_Pay + item.Sick_Day_NoPay;
-                    item.Sick_Day_Total = Decimal.Round((_leaveRecordService.GetSumHourByID(25, model.Year, model.EmployeeID) +
-                                          _leaveRecordService.GetSumHourByID(26, model.Year, model.EmployeeID) +
-                                          _leaveRecordService.GetSumHourByID(27, model.Year, model.EmployeeID)) / 8, 1);
-                    item.Thing_Day_Total = Decimal.Round(_leaveRecordService.GetSumHourByID(30, model.Year, model.EmployeeID) / 8, 1);
+                    item.Sick_Hour = item.Sick_Hour_Pay + item.Sick_Hour_NoPay;
+                    item.Sick_Hour_Total = _leaveRecordService.GetSumHourByID(25, model.Year, model.EmployeeID) +
+                                           _leaveRecordService.GetSumHourByID(26, model.Year, model.EmployeeID) +
+                                           _leaveRecordService.GetSumHourByID(27, model.Year, model.EmployeeID);
+                    item.Thing_Hour_Total = _leaveRecordService.GetSumHourByID(30, model.Year, model.EmployeeID);
                     items.Add(item);
 
                     Attendance attendance = new Attendance(item);
@@ -200,7 +200,7 @@ namespace Sonlen.AdminWebAPI.Service
         /// <param name="items"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        private byte[] ExportExcel(List<AttendancePrintModel> items, string fileName)
+        public byte[] ExportExcel(List<AttendancePrintModel> items, string fileName)
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial; // 關閉新許可模式通知
             ExcelPackage ep = new ExcelPackage();
